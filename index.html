@@ -204,6 +204,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
 .item-foot strong { color: var(--fg); font-size: 16px; font-variant-numeric: tabular-nums; }
 .save-row { display: flex; justify-content: flex-end; }
 .save-row .btn { min-height: 44px; }
+.new-act-row { display: flex; justify-content: flex-start; }
 .empty { border: 1px dashed var(--line); border-radius: 8px; padding: 18px; text-align: center; color: var(--muted); font-size: 14px; }
 
 .sum-box { display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 12px; }
@@ -314,10 +315,6 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
 .tpl .lbl { font-size: 12.5px; color: var(--muted); font-weight: 500; }
 .pv-btns { display: flex; flex-wrap: wrap; gap: 8px; }
 .pv-btns .btn { flex: 1 1 auto; }
-.chk { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 15px; cursor: pointer; }
-.chk input { width: 22px; height: 22px; flex: none; accent-color: var(--accent-ink); }
-.okopts { display: grid; gap: 2px; margin-top: 4px; }
-.okopts[hidden] { display: none; }
 .capture { position: fixed; left: -10000px; top: 0; z-index: -1; pointer-events: none; }
 .capture .paper { box-shadow: none; border-radius: 0; }
 .capture .sheet { padding: 14px 16px; gap: 12px; }
@@ -350,7 +347,6 @@ select { -webkit-appearance: none; appearance: none; background-image: url("data
   .btn, .cat-btn, .work-chip { min-height: 46px; }
   .chip { min-height: 42px; padding: 0 14px; }
   .del { width: 46px; min-height: 46px; }
-  .chk { min-height: 48px; }
 }
 .typing .bar { display: none; }
 
@@ -406,7 +402,7 @@ select { -webkit-appearance: none; appearance: none; background-image: url("data
 .h-sum strong { font: 700 17px/1.2 var(--display); font-variant-numeric: tabular-nums; text-align: right; }
 .h-act { display: flex; flex-wrap: wrap; gap: 6px; }
 .h-act .h-open { margin-inline-end: auto; }
-body[data-view="history"] .layout, body[data-view="history"] .banner { display: none; }
+body[data-view="history"] .layout, body[data-view="history"] .banner, body[data-view="history"] .brand small { display: none; }
 body:not([data-view="history"]) .history { display: none; }
 @media (max-width: 480px) {
   .topbar { padding: 16px; }
@@ -420,13 +416,18 @@ body:not([data-view="history"]) .history { display: none; }
   body[data-view="form"] .pane-preview { display: none; }
   body[data-view="preview"] .pane-form { display: none; }
   body[data-view="preview"] .banner, body[data-view="preview"] .top-actions, body[data-view="preview"] .brand small { display: none; }
-  .desktop-action { display: none; }
+  body[data-view="history"] .topbar { display: none; }
+  body[data-view="history"] .history { padding-top: 16px; }
+  .top-actions, .desktop-action { display: none; }
 }
 @media (min-width: 980px) {
   body { padding-block: 0 32px; }
   .layout { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 24px; align-items: start; }
   .pane-preview { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
   .act-card { display: none; }
+  body[data-view="history"] .topbar { background: none; border: 0; padding: 0; }
+  body[data-view="history"] .topbar::after, body[data-view="history"] .topbar .brand { display: none; }
+  body[data-view="history"] .topbar .btn { background: var(--surface); color: var(--fg); border-color: var(--line); }
   .bar { display: none; }
   .toast { bottom: 24px; }
 }
@@ -588,18 +589,15 @@ body[data-font="serif"] { --body: Georgia, 'Times New Roman', serif; --display: 
 body[data-motion="off"] .topbar::after,
 body[data-motion="off"].access-locked::before, body[data-motion="off"] .access-panel,
 body[data-motion="off"] .access-emblem, body[data-motion="off"] .access-hero h1 { animation: none; }
-body[data-motion="off"] button { transition: none; }
+body[data-motion="off"] button, body[data-motion="off"] .bar { transition: none; }
 body[data-motion="off"] button:not(:disabled):active { transform: none; }
 .settings-actions { display: grid; gap: 8px; }
 .settings-actions .btn { width: 100%; }
-.confirmation-box { display: grid; gap: 7px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
-.confirmation-box h2 { margin: 0; font-size: 15px; }
-.confirmation-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
-.confirmation-row span { min-width: 0; overflow-wrap: anywhere; }
-.confirmation-row strong, .confirmation-row small { display: block; }
-.confirmation-row small { color: var(--muted); }
-.confirmation-row .btn { min-height: 44px; }
-.confirmation-row .btn[aria-pressed="true"] { background: var(--surface-2); color: var(--accent-ink); }
+.act-confirm-row { display: flex; justify-content: flex-end; margin: 0 0 12px; }
+.act-confirm-row .btn { min-height: 44px; padding-inline: 11px; font-size: 12px; }
+.draft-list { display: grid; gap: 6px; margin-bottom: 14px; }
+.draft-list .btn { text-align: left; white-space: normal; overflow-wrap: anywhere; }
+.h-info .confirmed-badge { justify-self: start; color: var(--accent-ink); background: var(--surface-2); border-radius: 8px; padding: 2px 7px; }
 .access-switch { min-height: 44px; padding: 0; border: 0; background: none; color: #ffd16a; cursor: pointer; }
 .download-name { margin: 4px 0; color: var(--fg); font-size: 14px; overflow-wrap: anywhere; }
 .download-hint { font-size: 13px; color: var(--muted); margin: 0; }
@@ -663,8 +661,6 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     </div>
     <div class="top-actions">
       <button type="button" class="btn desktop-action" id="btnHistory">Архив</button>
-      <button type="button" class="btn" id="btnNew">Новый акт</button>
-      <button type="button" class="btn" id="btnSaveAct" data-save-act>Сохранить акт</button>
       <button type="button" class="btn desktop-action" id="btnSettings" aria-haspopup="dialog">Настройки</button>
     </div>
   </header>
@@ -678,7 +674,6 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     <div class="h-head">
       <span class="section-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-archive"/></svg></span>
       <div><h2>Архив актов</h2><p class="hint" id="histCount"></p></div>
-      <button type="button" class="btn" id="btnBack">← К акту</button>
     </div>
     <div class="h-list" id="histList"></div>
   </section>
@@ -761,12 +756,9 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
           <div class="fld wide"><label for="f-notes">Примечания</label><textarea id="f-notes" data-key="notes" placeholder="Материалы заказчика, замечания, договорённости"></textarea></div>
           <div class="fld wide"><span class="lbl">Подписи в акте</span>
             <div class="chips" id="signChips" role="group" aria-label="Как оформить подписи"></div>
-            <div class="okopts" id="okOpts" hidden>
-              <label class="chk"><input type="checkbox" id="f-workerOk"><span>Исполнитель сдал работы</span></label>
-              <label class="chk"><input type="checkbox" id="f-clientOk"><span>Заказчик принял работы, претензий нет</span></label>
-            </div>
           </div>
         </div>
+        <div class="save-row"><button type="button" class="btn primary" id="btnSaveAct">Сохранить акт</button></div>
         </div>
       </details>
       <details class="card" data-sec="s6">
@@ -778,9 +770,13 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
           <div class="fld"><label for="f-closing">Текст после таблицы</label><textarea id="f-closing" data-key="closing" placeholder="Работы выполнены в полном объёме. Заказчик осмотрел результат и претензий по объёму, качеству и срокам не имеет."></textarea></div>
         </div>
       </details>
+      <div class="new-act-row"><button type="button" class="btn" id="btnNew">Новый акт</button></div>
     </section>
 
     <section class="pane pane-preview" aria-label="Готовый акт">
+      <p class="empty" id="actsEmpty" hidden>Пока нет черновиков. Новый акт можно начать на главной.</p>
+      <div class="draft-list" id="draftList" hidden></div>
+      <div id="activeAct">
       <button class="act-card" type="button" id="actCard" aria-controls="fullAct" aria-expanded="false">
         <span class="act-thumb" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         <span class="act-card-text">
@@ -791,23 +787,20 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
         </span>
         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
+      <div class="act-confirm-row" id="actConfirmRow" hidden><button type="button" class="btn" id="confirmAct">Подтвердить</button></div>
       <div class="pv-tools">
         <p class="hint" id="samplePreview" hidden>Пример акта</p>
-        <div class="tpl"><span class="lbl">Шаблон акта</span><div class="chips" id="tplChips" role="group" aria-label="Шаблон акта"></div></div>
+        <div class="tpl" id="previewTemplates"><span class="lbl">Шаблон акта</span><div class="chips" id="tplChips" role="group" aria-label="Шаблон акта"></div></div>
         <div class="pv-btns">
           <button type="button" class="btn primary" id="btnPdf" aria-haspopup="dialog">Скачать или отправить PDF</button>
           <button type="button" class="btn" id="btnPng">Скачать картинку</button>
           <button type="button" class="btn" id="btnCopy">Копировать текст</button>
         </div>
         <p class="hint" id="pdfStatus" role="status" hidden></p>
-        <section class="confirmation-box" aria-labelledby="confirmationTitle">
-          <h2 id="confirmationTitle">Подтверждение работ</h2>
-          <div class="confirmation-row"><span><strong>Исполнитель</strong><small id="actWorkerName"></small></span><button type="button" class="btn" data-confirm-act="workerOk" aria-pressed="false">Подтвердить</button></div>
-          <div class="confirmation-row"><span><strong>Заказчик</strong><small id="actClientName"></small></span><button type="button" class="btn" data-confirm-act="clientOk" aria-pressed="false">Подтвердить</button></div>
-        </section>
       </div>
       <textarea class="copy-fallback" id="copyFallback" readonly hidden aria-label="Текст акта для копирования"></textarea>
       <div id="fullAct" hidden><article class="paper" id="paper"></article></div>
+      </div>
     </section>
   </main>
 </div>
@@ -862,7 +855,6 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   </section>
   <div class="settings-actions">
     <button type="button" class="btn" id="btnUpdate">Обновить сайт</button>
-    <button type="button" class="btn" id="btnSwitchProfile">Сменить профиль</button>
     <div class="settings-status" id="updateStatus" role="status"></div>
   </div>
 </dialog>
@@ -1179,6 +1171,11 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   /* История актов */
   function loadHist() { return workspace.history.slice(); }
   function saveHist(list) { workspace.history = list; queueProfileWrite(); }
+  function actIsConfirmed(meta) {
+    if (meta.confirmedAt) return true;
+    if (meta.confirmations) return !!(meta.confirmations.workerOk && meta.confirmations.clientOk);
+    return meta.signMode === 'check' && !!(meta.workerOk && meta.clientOk);
+  }
   function isEmptyAct(st) { return !st.items.length && !(st.meta.client || st.meta.address || st.meta.title); }
   function upsertHistory() {
     if (state.sample || (!state.saved && isEmptyAct(state))) return;
@@ -1198,7 +1195,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   function persist() {
     if (!activeProfile) return Promise.resolve(false);
     workspace.draft = state;
-    upsertHistory();
+    if (!archivePreview) upsertHistory();
     updateHistBtn();
     return writeProfile();
   }
@@ -1206,8 +1203,8 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   function save() { clearTimeout(saveTimer); saveTimer = setTimeout(persist, 250); }
   function flush() { clearTimeout(saveTimer); return persist(); }
   function updateHistBtn() {
-    var n = loadHist().length;
-    $('btnHistory').textContent = n ? 'Архив (' + n + ')' : 'Архив';
+    var n = loadHist().filter(function (act) { return actIsConfirmed(act.meta); }).length;
+    $('btnHistory').textContent = document.body.dataset.view === 'history' ? 'Главная' : (n ? 'Архив (' + n + ')' : 'Архив');
   }
 
   /* Форма */
@@ -1323,8 +1320,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
         '<div class="fld"><span class="lbl">Где выполнена работа</span><div class="chips places" role="group" aria-label="Помещение, можно выбрать несколько"></div></div>' +
         '<div class="fld"><label for="d-' + it.id + '">Уточнение к работе</label>' +
         (hints.length ? '<div class="chips tags" role="group" aria-label="Готовые варианты уточнения, можно выбрать несколько"></div>' : '') +
-        '<input type="text" id="d-' + it.id + '" class="in-note" placeholder="Или впишите свой текст"></div>' +
-        '<div class="save-row"><button type="button" class="btn" data-save-act>Сохранить работу</button></div>';
+        '<input type="text" id="d-' + it.id + '" class="in-note" placeholder="Или впишите свой текст"></div>';
       var inName = row.querySelector('.in-name'), inNote = row.querySelector('.in-note'), inQty = row.querySelector('.in-qty'),
           inUnit = row.querySelector('.in-unit'), inPrice = row.querySelector('.in-price'), sum = row.querySelector('.sum'),
           help = row.querySelector('.unit-help'),
@@ -1386,8 +1382,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     var mode = m.signMode || 'line';
     if (mode === 'none') return '';
     if (mode === 'check') {
-      return '<div class="signs"><div class="sign"><div class="role">Исполнитель</div>' + okRow(m.workerOk, 'Работы сдал') + '<div class="nm">' + esc(m.worker) + '</div></div>' +
-        '<div class="sign"><div class="role">Заказчик</div>' + okRow(m.clientOk, 'Работы принял, претензий нет') + '<div class="nm">' + esc(m.client) + '</div></div></div>';
+      return okRow(actIsConfirmed(m), 'Акт подтверждён');
     }
     return '<div class="signs"><div class="sign"><div class="role">Исполнитель</div><div class="line"></div><div class="cap">подпись</div><div class="nm">' + esc(m.worker) + '</div></div>' +
       '<div class="sign"><div class="role">Заказчик</div><div class="line"></div><div class="cap">подпись</div><div class="nm">' + esc(m.client) + '</div></div></div>';
@@ -1458,10 +1453,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     t.push('К оплате: ' + money(c.pay) + ' ' + l + ' (' + moneyWords(c.pay, cur()) + ')');
     if (m.warranty && num(m.warranty) > 0) t.push('Гарантия: ' + Math.round(num(m.warranty)) + ' мес.');
     if (m.notes) t.push('Примечания: ' + m.notes);
-    if (m.signMode === 'check') {
-      t.push('Исполнитель сдал работы: ' + (m.workerOk ? 'да' : 'нет'));
-      t.push('Заказчик принял работы, претензий нет: ' + (m.clientOk ? 'да' : 'нет'));
-    }
+    if (m.signMode === 'check') t.push('Акт подтверждён: ' + (actIsConfirmed(m) ? 'да' : 'нет'));
     return t.join('\n');
   }
 
@@ -1484,40 +1476,10 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     $('templateSetting').value = m.template === 'compact' ? 'compact' : 'business';
     chipRow($('signChips'), SIGNS, m.signMode || 'line', function (v) { state.meta.signMode = v; edit(); });
     chipRow($('warrChips'), WARR, String(m.warranty || ''), function (v) { state.meta.warranty = v; $('f-warranty').value = v; edit(); });
-    $('okOpts').hidden = m.signMode !== 'check';
-    $('f-workerOk').checked = !!m.workerOk;
-    $('f-clientOk').checked = !!m.clientOk;
-    $('actWorkerName').textContent = m.worker;
-    $('actClientName').textContent = m.client;
-    document.querySelectorAll('[data-confirm-act]').forEach(function (button) {
-      var confirmed = isConfirmed(m, button.dataset.confirmAct);
-      button.setAttribute('aria-pressed', String(confirmed));
-      button.textContent = confirmed ? 'Подтверждено' : 'Подтвердить';
-    });
-  }
-  function isConfirmed(meta, key) {
-    return meta.confirmations ? !!meta.confirmations[key] : meta.signMode === 'check' && !!meta[key];
-  }
-  function markConfirmation(key, value) {
-    var meta = state.meta;
-    if (!meta.confirmations) {
-      meta.confirmations = {workerOk: isConfirmed(meta, 'workerOk'), clientOk: isConfirmed(meta, 'clientOk')};
-    }
-    meta.confirmations[key] = value;
-    meta[key] = value;
-    edit();
-    flush();
+    $('templateSetting').disabled = actIsConfirmed(m);
   }
   function bindControls() {
-    $('f-workerOk').addEventListener('change', function () { markConfirmation('workerOk', this.checked); });
-    $('f-clientOk').addEventListener('change', function () { markConfirmation('clientOk', this.checked); });
     $('templateSetting').addEventListener('change', function () { state.meta.template = this.value; refresh(); });
-    document.querySelectorAll('[data-confirm-act]').forEach(function (button) {
-      button.addEventListener('click', function () {
-        var key = button.dataset.confirmAct;
-        markConfirmation(key, !isConfirmed(state.meta, key));
-      });
-    });
   }
 
   function renderSummaries() {
@@ -1540,10 +1502,6 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   function initFold() {
     document.querySelectorAll('details.card').forEach(function (d) {
       var k = d.dataset.sec;
-      var actions = document.createElement('div');
-      actions.className = 'save-row';
-      actions.innerHTML = '<button type="button" class="btn" data-save-act>Сохранить раздел</button>';
-      d.querySelector('.card-body').appendChild(actions);
       d.addEventListener('toggle', function () {
         if (!activeProfile) return;
         workspace.ui[k] = d.open;
@@ -1555,7 +1513,11 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     $('btnUnfoldAll').addEventListener('click', function () { setAll(true); });
   }
 
-  function refresh() { renderCats(); renderSums(); renderPaper(); renderControls(); renderSummaries(); save(); }
+  function refresh() {
+    renderCats(); renderSums(); renderPaper(); renderControls(); renderSummaries();
+    if (document.body.dataset.view === 'preview') renderActList();
+    save();
+  }
 
   function toast(msg) {
     var t = $('toast'); t.textContent = msg; t.hidden = false;
@@ -1563,11 +1525,11 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   }
 
   /* Экраны */
-  var lastView = 'form';
   var viewKey = 'akt-master-location-v1';
   var previewPane = document.querySelector('.pane-preview');
   var narrowScreen = window.matchMedia('(max-width: 979px)');
   var paperExpanded = false;
+  var archivePreview = false;
   var scrollTimer = null;
   var navScrollY = 0, navDrift = 0;
 
@@ -1581,7 +1543,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     clearTimeout(scrollTimer);
     if (!activeProfile || $('actApp').hidden) return;
     workspace.location = {
-      act: state.id, view: document.body.dataset.view, lastView: lastView,
+      act: state.id, view: document.body.dataset.view, archivePreview: archivePreview,
       y: window.scrollY, previewY: previewPane.scrollTop, paperExpanded: paperExpanded
     };
     queueProfileWrite();
@@ -1596,23 +1558,28 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   function restoreLocation() {
     var position = workspace.location;
     if (position && position.act === state.id && ['form', 'preview', 'history'].indexOf(position.view) !== -1) {
-      lastView = position.lastView === 'preview' ? 'preview' : 'form';
-      setView(position.view, position);
+      setView(position.view === 'form' && actIsConfirmed(state.meta) ? 'history' : position.view, position);
     } else {
-      setView('form');
+      setView(actIsConfirmed(state.meta) ? 'history' : 'form');
     }
   }
 
   function setView(v, position) {
-    if (position) paperExpanded = !!position.paperExpanded;
+    if (position) {
+      paperExpanded = !!position.paperExpanded;
+      archivePreview = !!position.archivePreview && actIsConfirmed(state.meta);
+    }
+    if (v !== 'preview') archivePreview = false;
     syncActCard();
-    if (v !== 'history') lastView = v;
     document.body.dataset.view = v;
+    var selected = archivePreview ? 'history' : v;
     $('bar').querySelectorAll('[data-nav]').forEach(function (button) {
-      if (button.dataset.nav === v) button.setAttribute('aria-current', 'page');
+      if (button.dataset.nav === selected) button.setAttribute('aria-current', 'page');
       else button.removeAttribute('aria-current');
     });
-    if (v === 'history') { flush(); renderHistory(); }
+    if (v === 'history') renderHistory();
+    if (v === 'preview') renderActList();
+    updateHistBtn();
     window.scrollTo(0, position ? position.y : 0);
     previewPane.scrollTop = position ? position.previewY : 0;
     navScrollY = window.scrollY;
@@ -1643,6 +1610,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     flush();
     state = { id: a.id, sample: false, saved: true, cats: state.cats, meta: Object.assign(blankMeta(), copyOf(a.meta)), items: copyOf(a.items).map(normItem) };
     paperExpanded = false;
+    archivePreview = view !== 'form' && actIsConfirmed(state.meta);
     $('banner').hidden = true;
     syncMeta(); renderWorks(); renderItems(); refresh();
     setView(view || 'preview');
@@ -1653,24 +1621,22 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     var n = nextNumber(), prev = state.meta;
     state = { id: uid(), sample: false, cats: state.cats, meta: blankMeta(), items: [] };
     paperExpanded = false;
+    archivePreview = false;
     state.meta.number = String(n);
     state.meta.worker = prev.worker; state.meta.workerPhone = prev.workerPhone; state.meta.city = prev.city; state.meta.template = prev.template; state.meta.signMode = prev.signMode;
     $('banner').hidden = true;
     syncMeta(); renderItems(); refresh();
     setView('form');
-    toast('Новый акт № ' + n + '. Прежний сохранён в истории.');
-  }
-  function loadSample() {
-    flush();
-    state = sample();
-    paperExpanded = false;
-    syncMeta(); renderCats(); renderWorks(); renderItems(); $('banner').hidden = false; refresh();
-    setView('form');
+    toast('Новый акт № ' + n);
   }
   function dupAct(a) {
     var c = copyOf(a);
     c.id = uid(); c.updated = Date.now();
     c.meta.number = String(nextNumber()); c.meta.date = todayISO();
+    delete c.meta.confirmedAt;
+    delete c.meta.confirmations;
+    c.meta.workerOk = false;
+    c.meta.clientOk = false;
     c.items.forEach(function (x) { x.id = uid(); });
     var list = loadHist(); list.unshift(c); saveHist(list);
     loadAct(c, 'form');
@@ -1688,13 +1654,14 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   }
 
   function renderHistory() {
-    var list = loadHist(), box = $('histList'); box.textContent = '';
+    var list = loadHist().filter(function (act) { return actIsConfirmed(act.meta); });
+    var box = $('histList');
+    box.textContent = '';
     $('histCount').textContent = list.length ? 'Сохранено: ' + list.length : 'Пока пусто';
     if (!list.length) {
       var e = document.createElement('div'); e.className = 'empty';
-      e.innerHTML = '<p style="margin:0 0 12px">Пока здесь пусто. Заполните первый акт, и он появится здесь сам.</p><button type="button" class="btn" id="btnSampleH">Показать пример акта</button>';
+      e.textContent = 'Подтверждённые акты появятся здесь.';
       box.appendChild(e);
-      $('btnSampleH').addEventListener('click', loadSample);
       return;
     }
     list.forEach(function (a) {
@@ -1704,7 +1671,8 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       card.innerHTML =
         '<div class="h-main"><span class="section-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-document"/></svg></span>' +
         '<div class="h-info"><span>' + esc(sub) + '</span><strong>' + esc(a.meta.title || a.meta.docTitle || DEF.title) + '</strong>' +
-        (a.meta.client ? '<span>' + esc(a.meta.client) + '</span>' : '') + (where ? '<span>' + esc(where) + '</span>' : '') + '</div>' +
+        (a.meta.client ? '<span>' + esc(a.meta.client) + '</span>' : '') + (where ? '<span>' + esc(where) + '</span>' : '') +
+        '<span class="confirmed-badge">Подтверждён</span></div>' +
         '<div class="h-sum"><span>К оплате</span><strong>' + money(c.pay) + ' ' + cur().label + '</strong></div></div>' +
         '<div class="h-act"><button type="button" class="btn primary h-open">Открыть</button><button type="button" class="btn h-dup">Сделать копию</button><button type="button" class="btn h-del">Удалить</button></div>';
       card.querySelector('.h-open').addEventListener('click', function () { loadAct(a, 'preview'); });
@@ -1722,9 +1690,38 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     });
   }
 
+  function renderActList() {
+    var confirmed = actIsConfirmed(state.meta);
+    var showCurrent = !confirmed || archivePreview;
+    var drafts = archivePreview ? [] : loadHist().filter(function (act) {
+      return act.id !== state.id && !actIsConfirmed(act.meta);
+    });
+    $('activeAct').hidden = !showCurrent;
+    $('actsEmpty').hidden = showCurrent || drafts.length > 0;
+    $('actConfirmRow').hidden = confirmed || state.sample || (!state.saved && isEmptyAct(state));
+    $('previewTemplates').hidden = confirmed;
+    var list = $('draftList');
+    list.hidden = !drafts.length;
+    list.textContent = '';
+    drafts.forEach(function (draft) {
+      var button = document.createElement('button');
+      button.className = 'btn';
+      button.type = 'button';
+      button.textContent = '№ ' + (draft.meta.number || '—') + ' · ' + (draft.meta.title || draft.meta.docTitle || DEF.title);
+      button.addEventListener('click', function () { loadAct(draft, 'preview'); });
+      list.appendChild(button);
+    });
+  }
+
+  function openForm() {
+    if (!actIsConfirmed(state.meta)) { setView('form'); return; }
+    var draft = loadHist().find(function (act) { return !actIsConfirmed(act.meta); });
+    if (draft) loadAct(draft, 'form');
+    else newAct();
+  }
+
   /* Кнопки */
-  $('actApp').addEventListener('click', async function (event) {
-    if (!event.target.closest('[data-save-act]')) return;
+  $('btnSaveAct').addEventListener('click', async function () {
     touch();
     state.saved = true;
     renderPaper();
@@ -1737,12 +1734,38 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       ? (number ? 'Акт № ' + number + ' сохранён' : 'Акт сохранён')
       : 'Не удалось сохранить акт. Проверьте, разрешено ли сохранение в браузере.');
   });
+  $('confirmAct').addEventListener('click', async function () {
+    if (state.sample || actIsConfirmed(state.meta)) return;
+    var button = this, act = state, session = activeProfile;
+    var previousHistory = workspace.history;
+    var previouslySaved = act.saved;
+    button.disabled = true;
+    act.saved = true;
+    act.meta.confirmedAt = Date.now();
+    var saved = await flush();
+    button.disabled = false;
+    if (session !== activeProfile || act !== state) return;
+    if (!saved) {
+      workspace.history = previousHistory;
+      act.saved = previouslySaved;
+      delete act.meta.confirmedAt;
+      updateHistBtn();
+      toast('Не удалось подтвердить акт. Попробуйте ещё раз.');
+      return;
+    }
+    renderPaper();
+    renderControls();
+    setView('history');
+    toast('Акт подтверждён и перенесён в архив');
+  });
   $('btnCustom').addEventListener('click', function () { addItem({ name: '', unit: 'шт.', units: U_CUSTOM, hints: [] }, 'other'); });
   $('btnNew').addEventListener('click', newAct);
-  $('btnHistory').addEventListener('click', function () { setView('history'); });
+  $('btnHistory').addEventListener('click', function () {
+    if (document.body.dataset.view === 'history') openForm();
+    else setView('history');
+  });
   $('navArchive').addEventListener('click', function () { setView('history'); });
-  $('navHome').addEventListener('click', function () { setView('form'); });
-  $('btnBack').addEventListener('click', function () { setView(lastView || 'form'); });
+  $('navHome').addEventListener('click', openForm);
   $('btnHide').addEventListener('click', function () { $('banner').hidden = true; });
   $('workSearch').addEventListener('input', renderWorks);
   $('btnCopy').addEventListener('click', function () {
@@ -1755,7 +1778,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       navigator.clipboard.writeText(text).then(function () { $('copyFallback').hidden = true; toast('Текст акта скопирован'); }, fallback);
     } catch (e) { fallback(); }
   });
-  $('btnView').addEventListener('click', function () { setView('preview'); });
+  $('btnView').addEventListener('click', function () { archivePreview = false; setView('preview'); });
   /* Скачать акт: PDF или картинка */
   var H2C = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
   var JSPDF = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
@@ -2023,6 +2046,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   var accessError = $('accessError');
   var accessMode = $('accessMode');
   var settings = $('settingsPanel');
+  var refreshSettingsKey = 'akt-master-refresh-settings';
   var createProfile = false;
   var profileChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('act-master-profiles') : null;
 
@@ -2061,6 +2085,14 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     $('actApp').hidden = false;
     $('bar').hidden = false;
     restoreLocation();
+    try {
+      var savedSettings = JSON.parse(sessionStorage.getItem(refreshSettingsKey));
+      sessionStorage.removeItem(refreshSettingsKey);
+      if (savedSettings && savedSettings.profile === activeProfile.id) {
+        openSettings();
+        settings.scrollTop = savedSettings.scrollTop;
+      }
+    } catch (error) {}
   }
   function enterProfile(session, data) {
     activeProfile = session;
@@ -2071,7 +2103,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     state = normalizeDraft(workspace.draft) || sample();
     workspace.draft = state;
     paperExpanded = false;
-    lastView = 'form';
+    archivePreview = false;
     applyPreferences();
     applyFold();
     syncMeta();
@@ -2216,7 +2248,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   }
 
   function openSettings() {
-    settings.showModal();
+    if (!settings.open) settings.showModal();
     $('navSettings').setAttribute('aria-expanded', 'true');
   }
   $('btnSettings').addEventListener('click', openSettings);
@@ -2243,22 +2275,6 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     renderPaper();
   }
 
-  $('btnSwitchProfile').addEventListener('click', async function () {
-    var button = this;
-    button.disabled = true;
-    rememberLocation();
-    var session = activeProfile;
-    if (!await flush()) {
-      $('updateStatus').textContent = 'Не удалось сохранить профиль. Попробуйте ещё раз.';
-      button.disabled = false;
-      return;
-    }
-    if (session === activeProfile) {
-      if (profileChannel) profileChannel.postMessage(session.id);
-      leaveProfile();
-    }
-    button.disabled = false;
-  });
   if (profileChannel) profileChannel.addEventListener('message', function (event) {
     if (activeProfile && event.data === activeProfile.id) leaveProfile();
   });
@@ -2287,6 +2303,11 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       }
       var registration = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
       if (registration) await registration.update();
+      try {
+        sessionStorage.setItem(refreshSettingsKey, JSON.stringify({
+          profile: activeProfile.id, scrollTop: settings.scrollTop
+        }));
+      } catch (error) {}
       window.location.reload();
     } catch (error) {
       status.textContent = 'Не удалось обновить сайт. Проверьте подключение к интернету.';
