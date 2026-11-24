@@ -874,9 +874,9 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   </div>
   <div class="settings-actions">
     <p class="download-name" id="downloadName"></p>
-    <button type="button" class="btn primary" id="sendPdfFile" hidden>Отправить PDF-файл</button>
-    <a class="btn" id="downloadPdf" download>Скачать PDF-файл</a>
-    <p class="download-hint">Скачанный PDF можно прикрепить в Telegram или WhatsApp как документ.</p>
+    <button type="button" class="btn primary" id="sendPdfFile" hidden>Отправить только PDF</button>
+    <button type="button" class="btn" id="downloadPdf">Скачать PDF-файл</button>
+    <p class="download-hint" id="downloadHint"></p>
     <div class="settings-status" id="downloadStatus" role="status"></div>
   </div>
 </dialog>
@@ -1888,16 +1888,46 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   }
   var inClaude = !!(window.claude && window.claude.use);
   var downloadPanel = $('downloadPanel');
-  var downloadLink = $('downloadPdf');
+  var downloadButton = $('downloadPdf');
   var sendPdf = $('sendPdfFile');
   var downloadFile = null;
-  var downloadUrl = null;
 
   function canSendPdf(file) {
     try {
       return !inClaude && typeof navigator.share === 'function' &&
         typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
     } catch (error) { return false; }
+  }
+
+  function appleBrowser() {
+    var agent = navigator.userAgent;
+    return /iPhone|iPad|iPod/.test(agent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+      (/Safari\//.test(agent) && !/Chrome\/|Chromium\/|Edg\//.test(agent));
+  }
+
+  function shareFile(file) {
+    var result = navigator.share({ files: [file] });
+    if (!result || typeof result.then !== 'function') throw new Error('Sharing unavailable');
+    return result;
+  }
+
+  function preparePdfDownload(file) {
+    return new Promise(function (resolve, reject) {
+      var worker = navigator.serviceWorker && navigator.serviceWorker.controller;
+      if (!worker) { reject(new Error('Service worker unavailable')); return; }
+      var id = crypto.randomUUID();
+      var channel = new MessageChannel();
+      var timer = setTimeout(function () { finish(false); }, 1900);
+      function finish(ready) {
+        clearTimeout(timer);
+        channel.port1.close();
+        if (ready) resolve(new URL('pdf-download/' + id, worker.scriptURL).href);
+        else reject(new Error('Download unavailable'));
+      }
+      channel.port1.onmessage = function (event) { finish(event.data === true); };
+      try { worker.postMessage({type: 'prepare-pdf-download', id: id, file: file}, [channel.port2]); }
+      catch (error) { finish(false); }
+    });
   }
 
   $('btnPdf').addEventListener('click', function () {
@@ -1907,11 +1937,18 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
         var file = await getFile('pdf');
         if (file !== readyPdf()) return;
         downloadFile = file;
-        downloadUrl = URL.createObjectURL(file);
-        downloadLink.href = downloadUrl;
-        downloadLink.download = file.name;
-        sendPdf.hidden = !canSendPdf(file);
-        downloadLink.classList.toggle('primary', sendPdf.hidden);
+        var canSend = canSendPdf(file);
+        var apple = appleBrowser();
+        var useFiles = apple && canSend;
+        sendPdf.hidden = !canSend;
+        downloadButton.hidden = apple && !canSend && !inClaude;
+        downloadButton.classList.toggle('primary', sendPdf.hidden);
+        downloadButton.textContent = useFiles ? 'Сохранить в «Файлы»' : 'Скачать PDF-файл';
+        $('downloadHint').textContent = downloadButton.hidden
+          ? 'Откройте сайт в Safari на iPhone или в Chrome на компьютере, чтобы сохранить файл.'
+          : useFiles
+          ? 'Если мессенджер не принял вложение, сохраните PDF в «Файлы» и прикрепите его в нужном чате.'
+          : 'Скачанный PDF можно прикрепить в Telegram или WhatsApp как документ.';
         $('downloadName').textContent = file.name;
         $('downloadStatus').textContent = '';
         downloadPanel.showModal();
@@ -1926,9 +1963,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     sendPdf.disabled = true;
     $('downloadStatus').textContent = '';
     try {
-      var sending = navigator.share({ files: [file] });
-      if (!sending || typeof sending.then !== 'function') throw new Error('Sharing unavailable');
-      await sending;
+      await shareFile(file);
       if (downloadFile === file) downloadPanel.close();
     } catch (error) {
       if (error.name !== 'AbortError' && downloadFile === file) {
@@ -1938,22 +1973,36 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       sendPdf.disabled = false;
     }
   });
-  downloadLink.addEventListener('click', async function (event) {
-    if (!inClaude || !downloadFile) return;
-    event.preventDefault();
+  downloadButton.addEventListener('click', async function () {
+    var file = downloadFile;
+    if (!file || downloadButton.disabled) return;
+    downloadButton.disabled = true;
+    $('downloadStatus').textContent = '';
     try {
-      await saveFile(downloadFile.name, downloadFile);
+      if (inClaude) {
+        await saveFile(file.name, file);
+      } else if (appleBrowser() && canSendPdf(file)) {
+        $('downloadStatus').textContent = 'В системном меню выберите «Сохранить в Файлы».';
+        await shareFile(file);
+      } else {
+        var address = await preparePdfDownload(file);
+        if (downloadFile !== file) return;
+        var frame = document.createElement('iframe');
+        frame.title = 'Скачивание PDF';
+        frame.hidden = true;
+        frame.src = address;
+        document.body.appendChild(frame);
+        setTimeout(function () { frame.remove(); }, 30000);
+      }
     } catch (error) {
-      $('downloadStatus').textContent = 'Не удалось скачать PDF. Попробуйте открыть сайт в Chrome.';
+      if (error.name !== 'AbortError' && downloadFile === file) {
+        $('downloadStatus').textContent = 'Не удалось начать скачивание. Обновите сайт или используйте кнопку отправки файла.';
+      }
+    } finally {
+      downloadButton.disabled = false;
     }
   });
-  downloadPanel.addEventListener('close', function () {
-    var oldUrl = downloadUrl;
-    downloadFile = null;
-    downloadUrl = null;
-    downloadLink.removeAttribute('href');
-    if (oldUrl) setTimeout(function () { URL.revokeObjectURL(oldUrl); }, 60000);
-  });
+  downloadPanel.addEventListener('close', function () { downloadFile = null; });
   $('btnPng').addEventListener('click', downloadPng);
 
   if (!inClaude) setTimeout(function () { Promise.all([loadScript(H2C), loadScript(JSPDF)]).catch(function () {}); }, 4000);
