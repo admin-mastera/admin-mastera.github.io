@@ -66,7 +66,7 @@ body {
   font: 15px/1.5 var(--body);
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 0 calc(136px + env(safe-area-inset-bottom, 0px));
+  padding-block: 0 calc(95px + env(safe-area-inset-bottom, 0px));
 }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { transition: transform 160ms cubic-bezier(.2,.8,.2,1), background-color 160ms ease, border-color 160ms ease; }
@@ -279,7 +279,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
 
 /* Навигация на телефоне */
 .bar {
-  position: fixed; left: 50%; bottom: max(10px, env(safe-area-inset-bottom, 0px)); z-index: 20;
+  position: fixed; left: 50%; bottom: max(5px, env(safe-area-inset-bottom, 0px)); z-index: 20;
   transform: translateX(-50%); width: min(480px, calc(100% - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
   padding: 6px; border: 1px solid var(--line); border-radius: 27px;
   background: var(--surface);
@@ -287,11 +287,10 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
   -webkit-backdrop-filter: blur(22px) saturate(1.35);
   backdrop-filter: blur(22px) saturate(1.35);
   box-shadow: 0 8px 28px rgba(0, 0, 0, .19);
+  transition: transform 200ms ease, opacity 160ms ease;
 }
-.bar-total { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 4px 10px 7px; border-bottom: 1px solid var(--line); }
-.bar-total .lbl { font-size: 12px; color: var(--muted); }
-.bar-total .val { font: 700 16px/1.3 var(--display); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; text-align: right; }
-.bar nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; margin-top: 4px; }
+.bar.is-tucked:not(:has(:focus-visible)) { opacity: 0; transform: translate(-50%, calc(100% + 24px)); pointer-events: none; }
+.bar nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; }
 .nav-btn {
   display: grid; place-items: center; min-height: 49px; min-width: 44px;
   padding: 0; border: 0; border-radius: 21px; background: transparent;
@@ -305,7 +304,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
 }
 
 .toast {
-  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(118px + env(safe-area-inset-bottom, 0px)); z-index: 30;
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(82px + env(safe-area-inset-bottom, 0px)); z-index: 30;
   background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 14px; max-width: calc(100vw - 32px);
 }
 .toast[hidden] { display: none; }
@@ -407,7 +406,7 @@ select { -webkit-appearance: none; appearance: none; background-image: url("data
 .h-sum strong { font: 700 17px/1.2 var(--display); font-variant-numeric: tabular-nums; text-align: right; }
 .h-act { display: flex; flex-wrap: wrap; gap: 6px; }
 .h-act .h-open { margin-inline-end: auto; }
-body[data-view="history"] .layout, body[data-view="history"] .banner, body[data-view="history"] .bar-total { display: none; }
+body[data-view="history"] .layout, body[data-view="history"] .banner { display: none; }
 body:not([data-view="history"]) .history { display: none; }
 @media (max-width: 480px) {
   .topbar { padding: 16px; }
@@ -593,6 +592,15 @@ body[data-motion="off"] button { transition: none; }
 body[data-motion="off"] button:not(:disabled):active { transform: none; }
 .settings-actions { display: grid; gap: 8px; }
 .settings-actions .btn { width: 100%; }
+.confirmation-box { display: grid; gap: 7px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.confirmation-box h2 { margin: 0; font-size: 15px; }
+.confirmation-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.confirmation-row span { min-width: 0; overflow-wrap: anywhere; }
+.confirmation-row strong, .confirmation-row small { display: block; }
+.confirmation-row small { color: var(--muted); }
+.confirmation-row .btn { min-height: 44px; }
+.confirmation-row .btn[aria-pressed="true"] { background: var(--surface-2); color: var(--accent-ink); }
+.access-switch { min-height: 44px; padding: 0; border: 0; background: none; color: #ffd16a; cursor: pointer; }
 .download-name { margin: 4px 0; color: var(--fg); font-size: 14px; overflow-wrap: anywhere; }
 .download-hint { font-size: 13px; color: var(--muted); margin: 0; }
 .download-panel .btn { min-height: 44px; }
@@ -603,6 +611,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
 }
 </style>
 <script src="welcome.js" defer></script>
+<script src="vault.js"></script>
 </head>
 <body class="access-locked">
 <canvas id="welcomeScene" class="welcome-scene" aria-hidden="true"></canvas>
@@ -639,6 +648,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     </div>
     <div class="access-error" id="accessError" role="alert"></div>
     <button type="submit" class="btn primary" id="accessSubmit">Войти</button>
+    <button type="button" class="access-switch" id="accessMode" hidden>Создать отдельный профиль</button>
   </form>
 </main>
 
@@ -790,6 +800,11 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
           <button type="button" class="btn" id="btnCopy">Копировать текст</button>
         </div>
         <p class="hint" id="pdfStatus" role="status" hidden></p>
+        <section class="confirmation-box" aria-labelledby="confirmationTitle">
+          <h2 id="confirmationTitle">Подтверждение работ</h2>
+          <div class="confirmation-row"><span><strong>Исполнитель</strong><small id="actWorkerName"></small></span><button type="button" class="btn" data-confirm-act="workerOk" aria-pressed="false">Подтвердить</button></div>
+          <div class="confirmation-row"><span><strong>Заказчик</strong><small id="actClientName"></small></span><button type="button" class="btn" data-confirm-act="clientOk" aria-pressed="false">Подтвердить</button></div>
+        </section>
       </div>
       <textarea class="copy-fallback" id="copyFallback" readonly hidden aria-label="Текст акта для копирования"></textarea>
       <div id="fullAct" hidden><article class="paper" id="paper"></article></div>
@@ -798,7 +813,6 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
 </div>
 
 <div class="bar" id="bar" hidden>
-  <div class="bar-total"><span class="lbl">К оплате</span><strong class="val" id="barVal">0</strong></div>
   <nav aria-label="Разделы приложения">
     <button class="nav-btn" type="button" id="navHome" data-nav="form" aria-current="page" aria-label="Главная" title="Главная">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v11h5v-6h4v6h5V9"/></svg>
@@ -810,7 +824,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-archive"/></svg>
     </button>
     <button class="nav-btn" type="button" id="navSettings" aria-haspopup="dialog" aria-expanded="false" aria-label="Настройки" title="Настройки">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-settings"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h5m4 0h7M4 12h10m4 0h2M4 18h3m4 0h9"/><circle cx="11" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg>
     </button>
   </nav>
 </div>
@@ -848,6 +862,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   </section>
   <div class="settings-actions">
     <button type="button" class="btn" id="btnUpdate">Обновить сайт</button>
+    <button type="button" class="btn" id="btnSwitchProfile">Сменить профиль</button>
     <div class="settings-status" id="updateStatus" role="status"></div>
   </div>
 </dialog>
@@ -1112,7 +1127,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     return it;
   }
   function blankMeta() {
-    return { number: '1', date: todayISO(), title: '', currency: 'rub', city: '', address: '', client: '', clientPhone: '', worker: '', workerPhone: '', discount: '', advance: '', warranty: '12', notes: '', template: 'business', signMode: 'line', workerOk: true, clientOk: false, docTitle: '', intro: '', closing: '' };
+    return { number: '1', date: todayISO(), title: '', currency: 'rub', city: '', address: '', client: '', clientPhone: '', worker: '', workerPhone: '', discount: '', advance: '', warranty: '12', notes: '', template: 'business', signMode: 'line', workerOk: false, clientOk: false, docTitle: '', intro: '', closing: '' };
   }
   function sample() {
     function it(cat, name, unit, qty, price, places, tags) {
@@ -1134,40 +1149,46 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       ]
     };
   }
-  function load() {
-    try {
-      var raw = localStorage.getItem(KEY);
-      if (!raw) return null;
-      var s = JSON.parse(raw);
-      if (s && s.meta && Array.isArray(s.items)) {
-        s.meta = Object.assign(blankMeta(), s.meta);
-        s.cats = Array.isArray(s.cats) && s.cats.length ? s.cats : ['tile'];
-        s.id = s.id || uid();
-        s.items = s.items.map(normItem);
-        return s;
-      }
-    } catch (e) {}
-    return null;
+  function normalizeDraft(s) {
+    if (!s || !s.meta || !Array.isArray(s.items)) return null;
+    s.meta = Object.assign(blankMeta(), s.meta);
+    s.cats = Array.isArray(s.cats) && s.cats.length ? s.cats : ['tile'];
+    s.id = s.id || uid();
+    s.items = s.items.map(normItem);
+    return s;
   }
-  var state = load() || sample();
+  function emptyProfile() { return {draft: null, history: [], ui: {}, preferences: {}, location: null}; }
+  var state = sample(), workspace = emptyProfile(), activeProfile = null;
+  var profileWrite = Promise.resolve(true), profileTimer = null;
+
+  function writeProfile() {
+    clearTimeout(profileTimer);
+    if (!activeProfile) return Promise.resolve(false);
+    var session = activeProfile;
+    var snapshot = JSON.stringify(workspace);
+    profileWrite = profileWrite.then(function () {
+      return window.actVault.write(session, snapshot);
+    }).then(function () { return true; }, function () { return false; });
+    return profileWrite;
+  }
+  function queueProfileWrite() {
+    clearTimeout(profileTimer);
+    if (activeProfile) profileTimer = setTimeout(writeProfile, 200);
+  }
 
   /* История актов */
-  function loadHist() {
-    try { var a = JSON.parse(localStorage.getItem(HKEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
-  }
-  function saveHist(list) {
-    try { localStorage.setItem(HKEY, JSON.stringify(list)); return true; } catch (e) { return false; }
-  }
+  function loadHist() { return workspace.history.slice(); }
+  function saveHist(list) { workspace.history = list; queueProfileWrite(); }
   function isEmptyAct(st) { return !st.items.length && !(st.meta.client || st.meta.address || st.meta.title); }
   function upsertHistory() {
-    if (state.sample || (!state.saved && isEmptyAct(state))) return true;
+    if (state.sample || (!state.saved && isEmptyAct(state))) return;
     var list = loadHist(), snap = copyOf({ id: state.id, meta: state.meta, items: state.items });
     snap.updated = Date.now();
     var i = -1;
     list.forEach(function (a, k) { if (a.id === state.id) i = k; });
     if (i === -1) list.unshift(snap); else list[i] = snap;
     list.sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); });
-    return saveHist(list.slice(0, 200));
+    saveHist(list.slice(0, 200));
   }
   function nextNumber() {
     var max = 0;
@@ -1175,10 +1196,11 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     return max + 1;
   }
   function persist() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { return false; }
-    var archived = upsertHistory();
+    if (!activeProfile) return Promise.resolve(false);
+    workspace.draft = state;
+    upsertHistory();
     updateHistBtn();
-    return archived;
+    return writeProfile();
   }
   var saveTimer = null;
   function save() { clearTimeout(saveTimer); saveTimer = setTimeout(persist, 250); }
@@ -1348,7 +1370,6 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     if (c.advance) h += '<div class="sum-row"><span>Аванс</span><span>− ' + money(c.advance) + ' ' + l + '</span></div>';
     h += '<div class="sum-row big"><span>К оплате</span><span>' + money(c.pay) + ' ' + l + '</span></div>';
     $('sumBox').innerHTML = h;
-    $('barVal').textContent = money(c.pay) + ' ' + l;
   }
 
   /* Акт */
@@ -1466,11 +1487,37 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     $('okOpts').hidden = m.signMode !== 'check';
     $('f-workerOk').checked = !!m.workerOk;
     $('f-clientOk').checked = !!m.clientOk;
+    $('actWorkerName').textContent = m.worker;
+    $('actClientName').textContent = m.client;
+    document.querySelectorAll('[data-confirm-act]').forEach(function (button) {
+      var confirmed = isConfirmed(m, button.dataset.confirmAct);
+      button.setAttribute('aria-pressed', String(confirmed));
+      button.textContent = confirmed ? 'Подтверждено' : 'Подтвердить';
+    });
+  }
+  function isConfirmed(meta, key) {
+    return meta.confirmations ? !!meta.confirmations[key] : meta.signMode === 'check' && !!meta[key];
+  }
+  function markConfirmation(key, value) {
+    var meta = state.meta;
+    if (!meta.confirmations) {
+      meta.confirmations = {workerOk: isConfirmed(meta, 'workerOk'), clientOk: isConfirmed(meta, 'clientOk')};
+    }
+    meta.confirmations[key] = value;
+    meta[key] = value;
+    edit();
+    flush();
   }
   function bindControls() {
-    $('f-workerOk').addEventListener('change', function () { state.meta.workerOk = this.checked; edit(); });
-    $('f-clientOk').addEventListener('change', function () { state.meta.clientOk = this.checked; edit(); });
+    $('f-workerOk').addEventListener('change', function () { markConfirmation('workerOk', this.checked); });
+    $('f-clientOk').addEventListener('change', function () { markConfirmation('clientOk', this.checked); });
     $('templateSetting').addEventListener('change', function () { state.meta.template = this.value; refresh(); });
+    document.querySelectorAll('[data-confirm-act]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var key = button.dataset.confirmAct;
+        markConfirmation(key, !isConfirmed(state.meta, key));
+      });
+    });
   }
 
   function renderSummaries() {
@@ -1484,19 +1531,23 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     set(6, (m.docTitle || m.intro || m.closing) ? 'Тексты изменены' : 'Стандартные тексты');
   }
   var UIKEY = 'akt-master-ui';
-  function loadUi() { try { return JSON.parse(localStorage.getItem(UIKEY) || '{}') || {}; } catch (e) { return {}; } }
+  function applyFold() {
+    document.querySelectorAll('details.card').forEach(function (details) {
+      var key = details.dataset.sec;
+      details.open = workspace.ui[key] === undefined ? key !== 's6' : !!workspace.ui[key];
+    });
+  }
   function initFold() {
-    var ui = loadUi();
     document.querySelectorAll('details.card').forEach(function (d) {
       var k = d.dataset.sec;
       var actions = document.createElement('div');
       actions.className = 'save-row';
       actions.innerHTML = '<button type="button" class="btn" data-save-act>Сохранить раздел</button>';
       d.querySelector('.card-body').appendChild(actions);
-      if (ui[k] !== undefined) d.open = !!ui[k];
       d.addEventListener('toggle', function () {
-        var u = loadUi(); u[k] = d.open;
-        try { localStorage.setItem(UIKEY, JSON.stringify(u)); } catch (e) {}
+        if (!activeProfile) return;
+        workspace.ui[k] = d.open;
+        queueProfileWrite();
       });
     });
     function setAll(v) { document.querySelectorAll('details.card').forEach(function (d) { d.open = v; }); }
@@ -1518,6 +1569,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   var narrowScreen = window.matchMedia('(max-width: 979px)');
   var paperExpanded = false;
   var scrollTimer = null;
+  var navScrollY = 0, navDrift = 0;
 
   function syncActCard() {
     var expanded = !narrowScreen.matches || paperExpanded;
@@ -1527,13 +1579,12 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
 
   function rememberLocation() {
     clearTimeout(scrollTimer);
-    if ($('actApp').hidden) return;
-    try {
-      localStorage.setItem(viewKey, JSON.stringify({
-        act: state.id, view: document.body.dataset.view, lastView: lastView,
-        y: window.scrollY, previewY: previewPane.scrollTop, paperExpanded: paperExpanded
-      }));
-    } catch (error) {}
+    if (!activeProfile || $('actApp').hidden) return;
+    workspace.location = {
+      act: state.id, view: document.body.dataset.view, lastView: lastView,
+      y: window.scrollY, previewY: previewPane.scrollTop, paperExpanded: paperExpanded
+    };
+    queueProfileWrite();
   }
 
   function rememberAfterScroll() {
@@ -1543,8 +1594,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   }
 
   function restoreLocation() {
-    var position;
-    try { position = JSON.parse(localStorage.getItem(viewKey)); } catch (error) {}
+    var position = workspace.location;
     if (position && position.act === state.id && ['form', 'preview', 'history'].indexOf(position.view) !== -1) {
       lastView = position.lastView === 'preview' ? 'preview' : 'form';
       setView(position.view, position);
@@ -1565,10 +1615,21 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     if (v === 'history') { flush(); renderHistory(); }
     window.scrollTo(0, position ? position.y : 0);
     previewPane.scrollTop = position ? position.previewY : 0;
+    navScrollY = window.scrollY;
+    navDrift = 0;
+    $('bar').classList.remove('is-tucked');
     if (!position) rememberLocation();
   }
 
-  window.addEventListener('scroll', rememberAfterScroll, { passive: true });
+  window.addEventListener('scroll', function () {
+    if (!narrowScreen.matches || $('actApp').hidden) return;
+    var y = Math.max(0, window.scrollY), delta = y - navScrollY;
+    navScrollY = y;
+    if (delta) navDrift = Math.sign(delta) === Math.sign(navDrift) ? navDrift + delta : delta;
+    if (y < 24 || navDrift < -12) $('bar').classList.remove('is-tucked');
+    else if (navDrift > 15) $('bar').classList.add('is-tucked');
+    rememberAfterScroll();
+  }, { passive: true });
   previewPane.addEventListener('scroll', rememberAfterScroll, { passive: true });
   if (narrowScreen.addEventListener) narrowScreen.addEventListener('change', syncActCard);
   else narrowScreen.addListener(syncActCard);
@@ -1662,15 +1723,18 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   }
 
   /* Кнопки */
-  $('actApp').addEventListener('click', function (event) {
+  $('actApp').addEventListener('click', async function (event) {
     if (!event.target.closest('[data-save-act]')) return;
     touch();
     state.saved = true;
     renderPaper();
     rememberLocation();
-    var saved = flush();
+    var session = activeProfile;
+    var number = state.meta.number;
+    var saved = await flush();
+    if (session !== activeProfile) return;
     toast(saved
-      ? (state.meta.number ? 'Акт № ' + state.meta.number + ' сохранён' : 'Акт сохранён')
+      ? (number ? 'Акт № ' + number + ' сохранён' : 'Акт сохранён')
       : 'Не удалось сохранить акт. Проверьте, разрешено ли сохранение в браузере.');
   });
   $('btnCustom').addEventListener('click', function () { addItem({ name: '', unit: 'шт.', units: U_CUSTOM, hints: [] }, 'other'); });
@@ -1778,6 +1842,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     return new Promise(function (res, rej) { cap.canvas.toBlob(function (b) { if (b) res(b); else rej(new Error('png')); }, 'image/png'); });
   }
   function getFile(kind) {
+    var owner = activeProfile;
     var key = exportKey(kind);
     if (files[kind] && files[kind].key === key) return Promise.resolve(files[kind].file);
     var paper = $('paper'), snapshot = { className: paper.className, html: paper.innerHTML };
@@ -1786,6 +1851,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       .then(function () { return captureCanvas(snapshot); })
       .then(function (cap) { return kind === 'pdf' ? pdfBlob(cap) : pngBlob(cap); })
       .then(function (blob) {
+        if (owner !== activeProfile) throw new Error('Profile changed');
         var file = new File([blob], name, { type: blob.type });
         files[kind] = { key: key, file: file };
         return file;
@@ -1899,7 +1965,6 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
 
   /* Код и оформление хранятся в этом браузере. */
   var accessKey = 'akt-master-access-v1';
-  var sessionKey = 'akt-master-unlocked';
   var backgroundKey = 'akt-master-background';
   var motionKey = 'akt-master-motion';
   var accessForm = $('accessForm');
@@ -1907,11 +1972,12 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   var confirmCode = $('confirmCode');
   var accessSubmit = $('accessSubmit');
   var accessError = $('accessError');
+  var accessMode = $('accessMode');
   var settings = $('settingsPanel');
-  var accessAttempt = 0;
+  var createProfile = false;
+  var profileChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('act-master-profiles') : null;
 
-  function showAccess(focus) {
-    accessAttempt++;
+  function showAccess(focus, create) {
     if (settings.open) settings.close();
     if (downloadPanel.open) downloadPanel.close();
     $('actApp').hidden = true;
@@ -1922,19 +1988,23 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     accessForm.reset();
     accessError.textContent = '';
     try {
-      var setup = localStorage.getItem(accessKey) === null;
-      $('accessHeading').textContent = setup ? 'Создайте код входа' : 'С возвращением';
-      $('accessCodeLabel').textContent = setup ? 'Новый код' : 'Код входа';
-      $('accessHint').textContent = setup
-        ? 'От 4 до 12 цифр. Код действует в этом браузере.'
-        : 'Введите код, который вы задали для этого браузера.';
-      $('confirmCodeField').hidden = !setup;
-      accessSubmit.textContent = setup ? 'Сохранить и войти' : 'Войти';
+      var hasProfiles = window.actVault.hasProfiles() || localStorage.getItem(accessKey) !== null;
+      createProfile = !hasProfiles || !!create;
+      $('accessHeading').textContent = createProfile ? 'Создайте код входа' : 'Вход в профиль';
+      $('accessCodeLabel').textContent = createProfile ? 'Новый код' : 'Код входа';
+      $('accessHint').textContent = createProfile
+        ? 'От 4 до 12 цифр. У каждого профиля свой код.'
+        : 'Введите свой код, чтобы открыть свои акты.';
+      $('confirmCodeField').hidden = !createProfile;
+      accessSubmit.textContent = createProfile ? 'Сохранить и войти' : 'Войти';
+      accessMode.hidden = !hasProfiles;
+      accessMode.textContent = createProfile ? 'Войти в существующий профиль' : 'Создать отдельный профиль';
       if (focus) accessCode.focus();
     } catch (error) {
       accessError.textContent = 'Разрешите браузеру сохранять данные этого сайта и обновите страницу.';
     }
   }
+  accessMode.addEventListener('click', function () { showAccess(false, !createProfile); });
 
   function showApp() {
     $('accessPanel').hidden = true;
@@ -1943,6 +2013,28 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     $('bar').hidden = false;
     restoreLocation();
   }
+  function enterProfile(session, data) {
+    activeProfile = session;
+    workspace = Object.assign(emptyProfile(), data);
+    if (!Array.isArray(workspace.history)) workspace.history = [];
+    workspace.ui = workspace.ui || {};
+    workspace.preferences = workspace.preferences || {};
+    state = normalizeDraft(workspace.draft) || sample();
+    workspace.draft = state;
+    paperExpanded = false;
+    lastView = 'form';
+    applyPreferences();
+    applyFold();
+    syncMeta();
+    $('workSearch').value = '';
+    renderWorks();
+    renderItems();
+    $('banner').hidden = !state.sample;
+    refresh();
+    updateHistBtn();
+    window.actVault.keep(session);
+    showApp();
+  }
 
   async function hashCode(code, salt) {
     var key = await crypto.subtle.importKey('raw', new TextEncoder().encode(code), 'PBKDF2', false, ['deriveBits']);
@@ -1950,6 +2042,42 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       name: 'PBKDF2', salt: salt, iterations: 600000, hash: 'SHA-256'
     }, key, 256);
     return btoa(String.fromCharCode.apply(null, new Uint8Array(hash)));
+  }
+
+  function readLegacyJson(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch (error) { return fallback; }
+  }
+
+  async function loadProfile(code, create) {
+    var session = await window.actVault.derive(code);
+    var existing = window.actVault.exists(session);
+    var legacy = readLegacyJson(accessKey, null);
+    var matchesLegacy = legacy && await hashCode(code, Uint8Array.from(atob(legacy.salt), function (char) {
+      return char.charCodeAt(0);
+    })) === legacy.hash;
+    if (create && (existing || matchesLegacy)) return {error: 'Этот код уже используется. Придумайте другой.'};
+    if (!create && !existing && !matchesLegacy) return {error: 'Неверный код. Попробуйте ещё раз.'};
+
+    var data = existing ? await window.actVault.read(session) : emptyProfile();
+    if (matchesLegacy && !existing) {
+      data.draft = readLegacyJson(KEY, null);
+      data.history = readLegacyJson(HKEY, []);
+      data.ui = readLegacyJson(UIKEY, {});
+      data.location = readLegacyJson(viewKey, null);
+      data.preferences = {
+        background: localStorage.getItem(backgroundKey), motion: localStorage.getItem(motionKey),
+        accent: localStorage.getItem('akt-master-accent'), font: localStorage.getItem('akt-master-font')
+      };
+    }
+    if (!existing) await window.actVault.write(session, JSON.stringify(data));
+    if (matchesLegacy) {
+      data = await window.actVault.read(session);
+      if (!data) throw new Error('Profile migration failed');
+      [KEY, HKEY, UIKEY, viewKey, backgroundKey, motionKey, 'akt-master-accent', 'akt-master-font', accessKey].forEach(function (key) {
+        localStorage.removeItem(key);
+      });
+    }
+    return {session: session, data: data};
   }
 
   accessForm.addEventListener('submit', async function (event) {
@@ -1962,46 +2090,31 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       accessCode.focus();
       return;
     }
+    if (createProfile && code !== confirmCode.value) {
+      accessError.textContent = 'Коды не совпадают. Повторите код.';
+      confirmCode.focus();
+      return;
+    }
     accessSubmit.disabled = true;
-    var attempt = accessAttempt;
+    accessMode.disabled = true;
+    var create = createProfile;
     try {
-      var saved = localStorage.getItem(accessKey);
-      if (saved === null) {
-        if (code !== confirmCode.value) {
-          accessError.textContent = 'Коды не совпадают. Повторите код.';
-          confirmCode.focus();
-          return;
-        }
-        var salt = crypto.getRandomValues(new Uint8Array(16));
-        var hash = await hashCode(code, salt);
-        if (attempt !== accessAttempt) return;
-        if (localStorage.getItem(accessKey) !== null) {
-          showAccess(true);
-          accessError.textContent = 'Код уже задан в другой вкладке. Введите его для входа.';
-          return;
-        }
-        localStorage.setItem(accessKey, JSON.stringify({
-          salt: btoa(String.fromCharCode.apply(null, salt)), hash: hash
-        }));
-      } else {
-        var record = JSON.parse(saved);
-        var savedSalt = Uint8Array.from(atob(record.salt), function (ch) { return ch.charCodeAt(0); });
-        var candidate = await hashCode(code, savedSalt);
-        if (attempt !== accessAttempt) return;
-        if (candidate !== record.hash) {
-          accessError.textContent = 'Неверный код. Попробуйте ещё раз.';
-          accessCode.select();
-          return;
-        }
+      var result = navigator.locks
+        ? await navigator.locks.request('act-master-profile-open', function () { return loadProfile(code, create); })
+        : await loadProfile(code, create);
+      if (result.error) {
+        accessError.textContent = result.error;
+        accessCode.select();
+        return;
       }
       document.activeElement.blur();
       accessForm.reset();
-      try { sessionStorage.setItem(sessionKey, '1'); } catch (error) {}
-      showApp();
+      enterProfile(result.session, result.data);
     } catch (error) {
       accessError.textContent = 'Не удалось проверить код. Откройте сайт по HTTPS и разрешите браузеру сохранять данные.';
     } finally {
       accessSubmit.disabled = false;
+      accessMode.disabled = false;
     }
   });
 
@@ -2015,9 +2128,9 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
 
   $('backgroundChoices').addEventListener('change', function (event) {
     setBackground(event.target.value);
-    try { localStorage.setItem(backgroundKey, document.body.dataset.background); } catch (error) {}
+    workspace.preferences.background = document.body.dataset.background;
+    queueProfileWrite();
   });
-  try { setBackground(localStorage.getItem(backgroundKey)); } catch (error) { setBackground('standard'); }
 
   function setMotion(value) {
     var enabled = value !== 'off';
@@ -2026,27 +2139,32 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   }
   $('motionEnabled').addEventListener('change', function (event) {
     setMotion(event.target.checked ? 'on' : 'off');
-    try { localStorage.setItem(motionKey, document.body.dataset.motion); } catch (error) {}
+    workspace.preferences.motion = document.body.dataset.motion;
+    queueProfileWrite();
   });
-  try { setMotion(localStorage.getItem(motionKey)); } catch (error) { setMotion('on'); }
 
   function bindAppearanceSelect(id, name, defaultValue) {
     var select = $(id);
-    var key = 'akt-master-' + name;
     function apply(value) {
       select.value = value || defaultValue;
       if (select.selectedIndex < 0) select.value = defaultValue;
       document.body.dataset[name] = select.value;
     }
-    try { apply(localStorage.getItem(key)); } catch (error) { apply(defaultValue); }
     select.addEventListener('change', function () {
       apply(select.value);
-      try { localStorage.setItem(key, select.value); } catch (error) {}
+      workspace.preferences[name] = select.value;
+      queueProfileWrite();
     });
-    window.addEventListener('storage', function (event) { if (event.key === key) apply(event.newValue); });
+    return apply;
   }
-  bindAppearanceSelect('accentSetting', 'accent', 'gold');
-  bindAppearanceSelect('fontSetting', 'font', 'system');
+  var applyAccent = bindAppearanceSelect('accentSetting', 'accent', 'gold');
+  var applyFont = bindAppearanceSelect('fontSetting', 'font', 'system');
+  function applyPreferences() {
+    setBackground(workspace.preferences.background);
+    setMotion(workspace.preferences.motion);
+    applyAccent(workspace.preferences.accent);
+    applyFont(workspace.preferences.font);
+  }
 
   function openSettings() {
     settings.showModal();
@@ -2055,14 +2173,55 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   $('btnSettings').addEventListener('click', openSettings);
   $('navSettings').addEventListener('click', openSettings);
   settings.addEventListener('close', function () { $('navSettings').setAttribute('aria-expanded', 'false'); });
-  window.addEventListener('storage', function (event) {
-    if (event.key === backgroundKey) setBackground(event.newValue);
-    if (event.key === motionKey) setMotion(event.newValue);
-    if (event.key === accessKey || event.key === null) {
-      rememberLocation();
-      try { sessionStorage.removeItem(sessionKey); } catch (error) {}
-      showAccess(false);
+  function leaveProfile() {
+    clearTimeout(saveTimer);
+    clearTimeout(profileTimer);
+    clearTimeout(scrollTimer);
+    activeProfile = null;
+    workspace = emptyProfile();
+    state = sample();
+    window.actVault.forget();
+    files = {};
+    $('histList').textContent = '';
+    $('copyFallback').value = '';
+    $('copyFallback').hidden = true;
+    $('downloadName').textContent = '';
+    showAccess(false);
+    applyPreferences();
+    applyFold();
+    syncMeta();
+    renderItems();
+    renderPaper();
+  }
+
+  $('btnSwitchProfile').addEventListener('click', async function () {
+    var button = this;
+    button.disabled = true;
+    rememberLocation();
+    var session = activeProfile;
+    if (!await flush()) {
+      $('updateStatus').textContent = 'Не удалось сохранить профиль. Попробуйте ещё раз.';
+      button.disabled = false;
+      return;
     }
+    if (session === activeProfile) {
+      if (profileChannel) profileChannel.postMessage(session.id);
+      leaveProfile();
+    }
+    button.disabled = false;
+  });
+  if (profileChannel) profileChannel.addEventListener('message', function (event) {
+    if (activeProfile && event.data === activeProfile.id) leaveProfile();
+  });
+  window.addEventListener('pageshow', async function (event) {
+    if (!event.persisted || !activeProfile) return;
+    var previous = activeProfile;
+    $('actApp').hidden = true;
+    $('bar').hidden = true;
+    var session = await window.actVault.resume();
+    if (activeProfile !== previous) return;
+    if (session && session.id === previous.id) showApp();
+    else leaveProfile();
   });
   $('btnUpdate').addEventListener('click', async function () {
     var button = $('btnUpdate');
@@ -2072,7 +2231,11 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     try {
       if (!navigator.onLine) throw new Error('offline');
       rememberLocation();
-      flush();
+      if (!await flush()) {
+        status.textContent = 'Не удалось сохранить профиль перед обновлением.';
+        button.disabled = false;
+        return;
+      }
       var registration = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
       if (registration) await registration.update();
       window.location.reload();
@@ -2091,14 +2254,21 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') saveProgress(); });
 
   /* Старт */
-  bindMeta(); bindControls(); initFold(); renderCats(); renderWorks(); renderItems();
-  $('banner').hidden = !state.sample;
+  bindMeta(); bindControls(); initFold();
   setView('form');
-  refresh(); updateHistBtn();
-  var unlocked = false;
-  try { unlocked = sessionStorage.getItem(sessionKey) === '1' && localStorage.getItem(accessKey) !== null; } catch (error) {}
-  if (unlocked) showApp();
-  else showAccess(false);
+  accessSubmit.disabled = true;
+  accessMode.disabled = true;
+  window.actVault.resume().then(async function (session) {
+    var data = session && await window.actVault.read(session);
+    if (data) enterProfile(session, data);
+    else showAccess(false);
+  }).catch(function () {
+    window.actVault.forget();
+    showAccess(false);
+  }).finally(function () {
+    accessSubmit.disabled = false;
+    accessMode.disabled = false;
+  });
 })();
 </script>
 
