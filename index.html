@@ -1,0 +1,1414 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1B1E21">
+<meta name="color-scheme" content="light dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Акт мастера">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Акт мастера</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: на телефоне два экрана (данные / акт) с нижней панелью итога; на широком экране форма слева, живой акт справа. */
+:root {
+  --bg: #ECEBE7;
+  --surface: #FFFFFF;
+  --surface-2: #F5F4F0;
+  --fg: #1C1E20;
+  --muted: #62666B;
+  --line: #D9D7D0;
+  --accent: #F4B400;
+  --on-accent: #1C1E20;
+  --accent-ink: #7A5700;
+  --ring: #7A5700;
+  --danger: #B3261E;
+  --paper: #FFFFFF;
+  --paper-fg: #1C1E20;
+  --paper-muted: #3F4348;
+  --paper-line: #D2CFC6;
+  --paper-grid: #6B7076;
+  --display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --doc: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --hero: #1B1E21;
+  --hero-fg: #F3F1EC;
+  --shadow: 0 1px 2px rgba(28,30,32,.06), 0 10px 28px -14px rgba(28,30,32,.22);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151719; --surface: #1F2225; --surface-2: #282C30; --fg: #ECEBE7; --muted: #9BA0A6;
+    --line: #353A41; --accent-ink: #F4B400; --ring: #F4B400; --danger: #FF8A80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151719; --surface: #1F2225; --surface-2: #282C30; --fg: #ECEBE7; --muted: #9BA0A6;
+  --line: #353A41; --accent-ink: #F4B400; --ring: #F4B400; --danger: #FF8A80;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+button, input, select, textarea, summary { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.5 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 96px;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.app { max-width: 1180px; margin: 0 auto; }
+
+/* Верхняя строка */
+.topbar {
+  position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; background: var(--hero); color: var(--hero-fg);
+  border-radius: 16px; padding: 20px 22px; margin-block: 16px; border: 1px solid rgba(255,255,255,.06);
+}
+.topbar::after {
+  content: ""; position: absolute; right: -10px; top: -10px; width: 240px; height: 160px; pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 34px, rgba(244,180,0,.55) 34px 36px),
+    repeating-linear-gradient(90deg, transparent 0 34px, rgba(244,180,0,.55) 34px 36px);
+  -webkit-mask-image: linear-gradient(225deg, #000, transparent 75%);
+  mask-image: linear-gradient(225deg, #000, transparent 75%);
+  opacity: .55;
+}
+.brand, .top-actions { position: relative; z-index: 1; }
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.brand svg { flex: none; }
+.brand h1 { margin: 0; font: 800 28px/1.05 var(--display); letter-spacing: -.01em; }
+.brand small { display: block; color: rgba(243,241,236,.72); font-size: 14px; line-height: 1.3; margin-top: 4px; }
+.top-actions { display: flex; gap: 8px; }
+.topbar .btn { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.24); color: var(--hero-fg); }
+.topbar .btn:hover { background: rgba(255,255,255,.16); }
+.topbar .btn.warn { color: #FFB4AB; border-color: #FFB4AB; }
+
+.btn {
+  min-height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--surface); cursor: pointer; font-weight: 500; font-size: 14px; white-space: nowrap;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+.btn.warn { border-color: var(--danger); color: var(--danger); }
+
+.banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  background: var(--surface); border: 1px dashed var(--accent-ink); border-radius: 10px;
+  padding: 10px 14px; margin-bottom: 16px; font-size: 14px;
+}
+.banner p { margin: 0; min-width: 0; }
+.banner[hidden] { display: none; }
+
+.layout { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
+.pane { min-width: 0; }
+.pane-form { display: grid; gap: 16px; align-content: start; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; min-width: 0; box-shadow: var(--shadow); }
+.card h2 { margin: 0; display: flex; align-items: center; gap: 12px; font: 700 18px/1.2 var(--display); letter-spacing: -.005em; }
+.step {
+  flex: none; width: 30px; height: 30px; border-radius: 8px; background: var(--accent); color: var(--on-accent);
+  display: inline-flex; align-items: center; justify-content: center; font: 800 15px/1 var(--display);
+}
+.hint { margin: 0; color: var(--muted); font-size: 13px; }
+
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.fld { display: grid; gap: 4px; min-width: 0; align-content: start; }
+.fld > label, .fld > .lbl { font-size: 12.5px; color: var(--muted); font-weight: 500; letter-spacing: .02em; }
+.numbox { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); transition: border-color .15s, box-shadow .15s; }
+.numbox span { padding-left: 14px; font: 800 18px/1 var(--display); color: var(--muted); }
+.numbox input[type="text"] { border: 0; background: transparent; box-shadow: none; font: 700 18px/1 var(--display); letter-spacing: .02em; }
+.numbox:focus-within { border-color: var(--accent-ink); background: var(--surface); box-shadow: 0 0 0 3px rgba(244, 180, 0, .38); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 38%, transparent); }
+input[type="text"], input[type="date"], select, textarea {
+  width: 100%; min-height: 46px; padding: 9px 13px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--surface-2); font-size: 16px; transition: border-color .15s, box-shadow .15s;
+}
+input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--accent-ink); background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(244, 180, 0, .38); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 38%, transparent);
+}
+textarea { min-height: 84px; resize: vertical; }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
+.wide { grid-column: 1 / -1; }
+
+/* Выбор работ */
+.cats, .wlist { display: flex; flex-wrap: wrap; gap: 8px; }
+.wgroups { display: grid; gap: 16px; }
+.wgroup { display: grid; gap: 8px; }
+.wgroup h3 { margin: 0; display: flex; align-items: center; gap: 8px; font: 700 12.5px/1.2 var(--display); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.cat-btn {
+  min-height: 42px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--surface); cursor: pointer; font-weight: 500; font-size: 14px;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.cat-btn svg { flex: none; }
+.cat-btn .cnt {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--fg); color: var(--bg);
+  font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;
+}
+.cat-btn[aria-pressed="true"] .cnt { background: var(--on-accent); color: var(--accent); }
+.cat-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+.work-chip {
+  min-height: 40px; padding: 6px 12px 6px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--surface); cursor: pointer; font-size: 14px; text-align: left; display: inline-flex; gap: 8px; align-items: center;
+}
+.work-chip::before { content: "+"; font-weight: 700; color: var(--accent-ink); font-size: 18px; line-height: 1; }
+.work-chip:hover { border-color: var(--accent-ink); }
+.work-chip small { color: var(--muted); }
+.works-box { background: var(--surface-2); border-radius: 8px; padding: 12px; display: grid; gap: 10px; }
+
+/* Строки работ */
+.items { display: grid; gap: 10px; }
+.item { border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 8px; background: var(--surface-2); }
+.item-top { display: flex; gap: 8px; }
+.item-top input { flex: 1; min-width: 0; font-weight: 500; }
+.in-note { font-size: 15px; }
+.item-nums.whole .fld.price { grid-column: 1 / -1; }
+.unit-help { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.chip { min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 13px; }
+.chip:hover { border-color: var(--accent-ink); }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+.paper .note { font-family: var(--body); font-size: 12.5px; color: var(--paper-muted); margin-top: 2px; }
+.del { flex: none; width: 44px; min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); cursor: pointer; font-size: 22px; line-height: 1; color: var(--muted); }
+.del:hover { color: var(--danger); border-color: var(--danger); }
+.item-nums { display: grid; gap: 8px 10px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.item-nums .fld.unit { grid-column: 1 / -1; }
+.item-nums input, .item-nums select { padding-left: 10px; padding-right: 8px; }
+.item-foot { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; font-size: 13px; color: var(--muted); }
+.item-foot strong { color: var(--fg); font-size: 16px; font-variant-numeric: tabular-nums; }
+.empty { border: 1px dashed var(--line); border-radius: 8px; padding: 18px; text-align: center; color: var(--muted); font-size: 14px; }
+
+.sum-box { display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 12px; }
+.sum-row { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+.sum-row.big { font-size: 18px; font-weight: 700; }
+
+/* Акт */
+.pv-tools { display: grid; gap: 12px; margin-bottom: 14px; }
+.pv-tools p { margin: 0; color: var(--muted); font-size: 13px; }
+.copy-fallback { width: 100%; margin-bottom: 12px; min-height: 120px; font-size: 13px; }
+.copy-fallback[hidden] { display: none; }
+
+.paper { background: var(--paper); color: var(--paper-fg); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 0 var(--paper-line), 0 14px 34px -14px rgba(0,0,0,.4); font-family: var(--doc); --body: var(--doc); font-size: 15px; line-height: 1.5; }
+.paper th, .p-theme span, .parties dt, .th-note, .sign .role, .sign .cap, .words span { font-family: var(--body); }
+.ruler {
+  height: 16px; background-color: var(--accent);
+  background-image:
+    repeating-linear-gradient(90deg, rgba(28,30,32,.8) 0 1px, transparent 1px 40px),
+    repeating-linear-gradient(90deg, rgba(28,30,32,.65) 0 1px, transparent 1px 8px);
+  background-size: 100% 10px, 100% 5px; background-position: left bottom; background-repeat: no-repeat;
+}
+.sheet { padding: 22px clamp(14px, 4vw, 38px) 30px; display: grid; gap: 16px; }
+.p-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; border-bottom: 2px solid var(--paper-fg); padding-bottom: 10px; }
+.p-head h3 { margin: 0; font: 700 24px/1.15 var(--doc); letter-spacing: .03em; text-transform: uppercase; }
+.p-head .no { text-align: right; color: var(--paper-muted); font-size: 13px; }
+.p-head .no strong { color: var(--paper-fg); font-size: 15px; }
+.p-theme { margin: 0; font-size: 15px; }
+.p-theme span, .parties dt, .th-note { color: var(--paper-muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
+.p-theme strong { display: block; font-size: 17px; font-weight: 600; margin-top: 2px; }
+.parties { margin: 0; display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 6px 12px; align-items: baseline; }
+.parties dd { margin: 0; overflow-wrap: anywhere; }
+.blank { display: inline-block; min-width: 140px; height: 1.1em; border-bottom: 1px solid var(--paper-muted); vertical-align: bottom; }
+.tbl-wrap { overflow-x: auto; }
+.paper table { width: 100%; min-width: 440px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.paper th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--paper-muted); border-bottom: 2px solid var(--paper-fg); padding: 6px 6px; font-weight: 600; }
+.paper td { padding: 8px 6px; border-bottom: 1px solid var(--paper-line); vertical-align: top; }
+.paper .r { text-align: right; white-space: nowrap; }
+.paper td.n { width: 28px; color: var(--paper-muted); }
+.paper td.empty-row { text-align: center; color: var(--paper-muted); padding: 22px 6px; }
+.totals { margin-left: auto; width: min(100%, 340px); display: grid; gap: 4px; font-variant-numeric: tabular-nums; }
+.totals div { display: flex; justify-content: space-between; gap: 12px; }
+.totals .pay { border-top: 2px solid var(--paper-fg); padding-top: 6px; font-weight: 700; font-size: 16px; margin-top: 4px; }
+.words { margin: 0; }
+.words span { color: var(--paper-muted); }
+.statement { margin: 0; }
+.signs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; padding-top: 14px; }
+.sign .role { font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--paper-muted); font-weight: 600; }
+.sign .line { height: 34px; border-bottom: 1px solid var(--paper-fg); }
+.sign .cap { font-size: 11px; color: var(--paper-muted); margin-top: 3px; }
+.sign .nm { margin-top: 6px; min-height: 1.4em; overflow-wrap: anywhere; }
+
+/* Нижняя панель на телефоне */
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  background: var(--surface); border-top: 1px solid var(--line);
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.bar .lbl { font-size: 12px; color: var(--muted); line-height: 1.2; }
+.bar .val { font: 600 20px/1.15 var(--display); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.bar .btn { min-height: 46px; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 30;
+  background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 14px; max-width: calc(100vw - 32px);
+}
+.toast[hidden] { display: none; }
+
+/* Панель над актом и подписи */
+.tpl { display: grid; gap: 6px; }
+.tpl .lbl { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+.pv-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.pv-btns .btn { flex: 1 1 auto; }
+.chk { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 15px; cursor: pointer; }
+.chk input { width: 22px; height: 22px; flex: none; accent-color: var(--accent-ink); }
+.okopts { display: grid; gap: 2px; margin-top: 4px; }
+.okopts[hidden] { display: none; }
+.capture { position: fixed; left: -10000px; top: 0; width: 640px; z-index: -1; pointer-events: none; }
+.capture .paper { box-shadow: none; border-radius: 0; }
+.okrow { display: flex; align-items: center; gap: 10px; min-height: 34px; }
+.box { flex: none; width: 20px; height: 20px; border: 1.5px solid var(--paper-fg); border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; }
+.box.on { background: var(--paper-fg); color: #fff; }
+
+/* Шаблоны акта: Классический, Деловой, Компактный */
+.paper--business { font-family: var(--body); }
+.paper--business .p-head h3 { font: 700 28px/1.1 var(--doc); letter-spacing: -.02em; text-transform: none; }
+.paper--business .p-head { border-bottom: 1px solid var(--paper-line); padding-bottom: 14px; }
+.paper--business th { background: #F1F0EC; border-bottom: 1px solid var(--paper-line); padding: 8px; }
+.paper--business td { padding: 10px 8px; }
+.paper--business .totals .pay { border-top: 1px solid var(--paper-fg); }
+.paper--compact { font-size: 13px; line-height: 1.4; }
+.paper--compact .sheet { padding: 16px clamp(12px, 3vw, 28px) 20px; gap: 10px; }
+.paper--compact .p-head h3 { font-size: 20px; }
+.paper--compact .p-theme strong { font-size: 15px; }
+.paper--compact td { padding: 4px 6px; }
+.paper--compact .signs { padding-top: 6px; }
+.paper--compact .sign .line { height: 24px; }
+
+/* Телефон: крупные зоны нажатия, клавиатура, iPhone и Android */
+input[type="date"] { -webkit-appearance: none; appearance: none; display: block; min-width: 0; text-align: left; }
+input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+select { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20'%3E%3Cpath d='M5 7.5l5 5 5-5' fill='none' stroke='%23888' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px; }
+@media (pointer: coarse) {
+  .btn, .cat-btn, .work-chip { min-height: 46px; }
+  .chip { min-height: 42px; padding: 0 14px; }
+  .del { width: 46px; min-height: 46px; }
+  .chk { min-height: 48px; }
+}
+.typing .bar { display: none; }
+
+/* Сворачиваемые блоки */
+.fold-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.fold-tools .btn { flex: 1 1 auto; }
+.card > summary { list-style: none; display: flex; align-items: center; gap: 12px; padding: 16px 20px; min-height: 62px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.card > summary::-webkit-details-marker { display: none; }
+.card > summary .ttl { flex: none; font: 700 18px/1.2 var(--display); letter-spacing: -.005em; }
+.card > summary .sm { flex: 1; min-width: 0; text-align: right; color: var(--muted); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card[open] > summary .sm { display: none; }
+.card > summary .chev { flex: none; margin-left: auto; color: var(--muted); transition: transform .15s; }
+.card > summary .sm + .chev { margin-left: 4px; }
+.card[open] > summary .chev { transform: rotate(180deg); margin-left: auto; }
+.card-body { padding: 0 20px 20px; display: grid; gap: 16px; }
+
+/* Таблица акта: строгая, с сеткой */
+.paper table { border: 1px solid var(--paper-fg); }
+.paper th, .paper td { border: 1px solid var(--paper-grid); }
+.paper th { background: #ECEBE6; color: var(--paper-fg); border-bottom: 1.5px solid var(--paper-fg); padding: 8px; font-size: 11.5px; font-weight: 700; }
+.paper th.c, .paper td.n { text-align: center; }
+.paper td { padding: 9px 8px; }
+.paper td.n { width: 34px; color: var(--paper-fg); }
+.paper tfoot td { padding: 7px 8px; font-variant-numeric: tabular-nums; }
+.paper tfoot td.lbl { text-align: right; font-family: var(--body); font-weight: 600; }
+.paper tfoot tr.pay td { font-weight: 700; font-size: 1.07em; background: #F3F2EE; border-top: 1.5px solid var(--paper-fg); }
+.p-theme span, .parties dt, .th-note { font-weight: 700; }
+
+/* История актов */
+.history { display: grid; gap: 14px; margin-bottom: 24px; }
+.h-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.h-head h2 { margin: 0; font: 800 24px/1.1 var(--display); letter-spacing: -.01em; }
+.h-list { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+.hcard { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 12px; box-shadow: var(--shadow); min-width: 0; }
+.h-main { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; }
+.h-no { background: var(--accent); color: var(--on-accent); border-radius: 10px; padding: 8px 12px; font: 800 18px/1 var(--display); text-align: center; }
+.h-no small { display: block; font: 600 10px/1 var(--body); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+.h-info { display: grid; gap: 2px; min-width: 0; }
+.h-info strong { overflow-wrap: anywhere; }
+.h-info span { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.h-sum { grid-column: 1 / -1; font: 700 18px/1.2 var(--display); font-variant-numeric: tabular-nums; }
+.h-act { display: flex; flex-wrap: wrap; gap: 8px; }
+body[data-view="history"] .layout, body[data-view="history"] .banner, body[data-view="history"] .bar { display: none; }
+body:not([data-view="history"]) .history { display: none; }
+@media (max-width: 480px) {
+  .topbar { padding: 16px; }
+  .brand h1 { font-size: 24px; }
+  .card > summary { padding: 14px 16px; }
+  .card-body { padding: 0 16px 16px; }
+  .btn { min-height: 44px; }
+}
+
+@media (max-width: 979px) {
+  body[data-view="form"] .pane-preview { display: none; }
+  body[data-view="preview"] .pane-form { display: none; }
+}
+@media (min-width: 980px) {
+  body { padding-block: 0 32px; }
+  .layout { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 24px; align-items: start; }
+  .pane-preview { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+  .bar { display: none; }
+  .toast { bottom: 24px; }
+}
+@media (max-width: 480px) {
+  .signs { gap: 14px; }
+  .parties { grid-template-columns: 86px minmax(0, 1fr); }
+  .p-head h3 { font-size: 22px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="1" y="1" width="38" height="38" rx="6" fill="#F4B400"/>
+        <rect x="6" y="6" width="12" height="12" fill="#1C1E20"/>
+        <rect x="22" y="6" width="12" height="12" fill="#1C1E20" opacity=".35"/>
+        <rect x="6" y="22" width="12" height="12" fill="#1C1E20" opacity=".35"/>
+        <rect x="24" y="22" width="8.5" height="8.5" fill="#1C1E20" transform="rotate(45 28.25 26.25)"/>
+      </svg>
+      <div>
+        <h1>Акт мастера</h1>
+        <small>Заполните данные, акт соберётся сам</small>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button type="button" class="btn" id="btnHistory">История</button>
+      <button type="button" class="btn" id="btnNew">Новый акт</button>
+    </div>
+  </header>
+
+  <div class="banner" id="banner" hidden>
+    <p><strong>Это пример.</strong> Имена, адрес и цены вымышленные. Нажмите «Новый акт», чтобы начать со своими данными. Если начнёте править пример, он станет вашим актом.</p>
+    <button type="button" class="btn" id="btnHide">Скрыть</button>
+  </div>
+
+  <section class="history" id="history" aria-label="История актов">
+    <div class="h-head">
+      <button type="button" class="btn" id="btnBack">← К акту</button>
+      <div><h2>История актов</h2><p class="hint" id="histCount"></p></div>
+    </div>
+    <p class="hint">Акты сохраняются сами, пока вы их заполняете. Они хранятся в браузере на этом телефоне. Если очистить данные браузера, история пропадёт.</p>
+    <div class="h-list" id="histList"></div>
+  </section>
+
+  <main class="layout">
+    <section class="pane pane-form" aria-label="Данные акта">
+      <div class="fold-tools">
+        <button type="button" class="btn" id="btnFoldAll">Свернуть всё</button>
+        <button type="button" class="btn" id="btnUnfoldAll">Развернуть всё</button>
+      </div>
+
+      <details class="card" data-sec="s1" open>
+        <summary><span class="step">1</span><span class="ttl">Об акте</span><span class="sm" id="sm1"></span><svg class="chev" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="card-body">
+        <div class="grid">
+          <div class="fld"><label for="f-number">Номер акта</label><div class="numbox"><span aria-hidden="true">№</span><input type="text" id="f-number" data-key="number" placeholder="1" inputmode="numeric" autocomplete="off" aria-label="Номер акта, цифры"></div></div>
+          <div class="fld"><label for="f-date">Дата</label><input type="date" id="f-date" data-key="date"></div>
+          <div class="fld"><label for="f-city">Город</label><input type="text" id="f-city" data-key="city" autocapitalize="words" autocomplete="off" placeholder="Например: Москва"></div>
+          <div class="fld wide"><label for="f-title">Тема акта (что делали)</label>
+            <input type="text" id="f-title" data-key="title" list="titles" placeholder="Например: Ремонт ванной комнаты">
+            <datalist id="titles">
+              <option value="Ремонт ванной комнаты"></option>
+              <option value="Укладка плитки"></option>
+              <option value="Покраска и шпаклёвка стен"></option>
+              <option value="Монтаж гипсокартона"></option>
+              <option value="Замена сантехники"></option>
+              <option value="Электромонтажные работы"></option>
+              <option value="Капитальный ремонт квартиры"></option>
+            </datalist>
+          </div>
+        </div>
+        </div>
+      </details>
+
+      <details class="card" data-sec="s2" open>
+        <summary><span class="step">2</span><span class="ttl">Объект и заказчик</span><span class="sm" id="sm2"></span><svg class="chev" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="card-body">
+        <div class="grid">
+          <div class="fld wide"><label for="f-address">Адрес объекта</label><input type="text" id="f-address" data-key="address" placeholder="Город, улица, дом, квартира"></div>
+          <div class="fld"><label for="f-client">Заказчик (ФИО)</label><input type="text" id="f-client" data-key="client" autocapitalize="words" autocomplete="off" placeholder="Фамилия Имя Отчество"></div>
+          <div class="fld"><label for="f-clientPhone">Сотовый телефон заказчика</label><input type="text" id="f-clientPhone" data-key="clientPhone" inputmode="tel" placeholder="+7 900 123-45-67"></div>
+        </div>
+        </div>
+      </details>
+
+      <details class="card" data-sec="s3" open>
+        <summary><span class="step">3</span><span class="ttl">Исполнитель</span><span class="sm" id="sm3"></span><svg class="chev" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="card-body">
+        <div class="grid">
+          <div class="fld"><label for="f-worker">ФИО или название бригады</label><input type="text" id="f-worker" data-key="worker" autocapitalize="words" autocomplete="off" placeholder="Кто выполнял работы"></div>
+          <div class="fld"><label for="f-workerPhone">Сотовый телефон исполнителя</label><input type="text" id="f-workerPhone" data-key="workerPhone" inputmode="tel" placeholder="+7 900 123-45-67"></div>
+        </div>
+        <p class="hint">Эти данные запоминаются в браузере и остаются при новом акте.</p>
+        </div>
+      </details>
+
+      <details class="card" data-sec="s4" open>
+        <summary><span class="step">4</span><span class="ttl">Работы</span><span class="sm" id="sm4"></span><svg class="chev" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="card-body">
+        <div class="works-box">
+          <div class="cats" id="cats" role="group" aria-label="Виды работ, можно выбрать несколько"></div>
+          <div class="fld"><label class="sr" for="workSearch">Найти работу</label><input type="text" id="workSearch" placeholder="Найти работу, например: штукатурка" autocomplete="off"></div>
+          <div class="wgroups" id="works"></div>
+        </div>
+        <p class="hint">Выберите один или несколько видов работ. Нажмите на нужную работу, и она добавится в акт. Дальше впишите объём и цену.</p>
+        <div class="items" id="items"></div>
+        <button type="button" class="btn" id="btnCustom">+ Своя работа</button>
+
+        <div class="sum-box" id="sumBox"></div>
+        </div>
+      </details>
+
+      <details class="card" data-sec="s5" open>
+        <summary><span class="step">5</span><span class="ttl">Итоги и условия</span><span class="sm" id="sm5"></span><svg class="chev" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="card-body">
+        <div class="grid">
+          <div class="fld"><label for="f-discount">Скидка</label><input type="text" id="f-discount" data-key="discount" inputmode="decimal" placeholder="0"></div>
+          <div class="fld"><label for="f-advance">Аванс уже получен</label><input type="text" id="f-advance" data-key="advance" inputmode="decimal" placeholder="0"></div>
+          <div class="fld"><label for="f-warranty">Гарантия, месяцев</label><input type="text" id="f-warranty" data-key="warranty" inputmode="numeric" placeholder="Без гарантии"><div class="chips" id="warrChips" role="group" aria-label="Срок гарантии"></div></div>
+          <div class="fld wide"><label for="f-notes">Примечания</label><textarea id="f-notes" data-key="notes" placeholder="Материалы заказчика, замечания, договорённости"></textarea></div>
+          <div class="fld wide"><span class="lbl">Подписи в акте</span>
+            <div class="chips" id="signChips" role="group" aria-label="Как оформить подписи"></div>
+            <div class="okopts" id="okOpts" hidden>
+              <label class="chk"><input type="checkbox" id="f-workerOk"><span>Исполнитель сдал работы</span></label>
+              <label class="chk"><input type="checkbox" id="f-clientOk"><span>Заказчик принял работы, претензий нет</span></label>
+            </div>
+          </div>
+        </div>
+        </div>
+      </details>
+      <details class="card" data-sec="s6">
+        <summary><span class="step">6</span><span class="ttl">Тексты в акте</span><span class="sm" id="sm6"></span><svg class="chev" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="card-body">
+          <p class="hint">Здесь можно изменить любой текст акта. Если поле пустое, в акте будет стандартный текст.</p>
+          <div class="fld"><label for="f-docTitle">Название документа</label><input type="text" id="f-docTitle" data-key="docTitle" placeholder="Акт выполненных работ"></div>
+          <div class="fld"><label for="f-intro">Текст перед таблицей</label><textarea id="f-intro" data-key="intro" placeholder="Исполнитель выполнил, а Заказчик принял следующие работы:"></textarea></div>
+          <div class="fld"><label for="f-closing">Текст после таблицы</label><textarea id="f-closing" data-key="closing" placeholder="Работы выполнены в полном объёме. Заказчик осмотрел результат и претензий по объёму, качеству и срокам не имеет."></textarea></div>
+        </div>
+      </details>
+    </section>
+
+    <section class="pane pane-preview" aria-label="Готовый акт">
+      <div class="pv-tools">
+        <div class="tpl"><span class="lbl">Шаблон акта</span><div class="chips" id="tplChips" role="group" aria-label="Шаблон акта"></div></div>
+        <div class="pv-btns">
+          <button type="button" class="btn primary" id="btnShare" hidden>Отправить</button>
+          <button type="button" class="btn primary" id="btnPdf">Скачать PDF</button>
+          <button type="button" class="btn" id="btnPng">Скачать картинку</button>
+          <button type="button" class="btn" id="btnCopy">Копировать текст</button>
+        </div>
+        <p class="hint">Скачайте файл и отправьте его заказчику в мессенджере или на почту. Акт обновляется, пока вы вводите данные.</p>
+      </div>
+      <textarea class="copy-fallback" id="copyFallback" readonly hidden aria-label="Текст акта для копирования"></textarea>
+      <article class="paper" id="paper"></article>
+    </section>
+  </main>
+</div>
+
+<div class="bar" id="bar">
+  <div><div class="lbl">К оплате</div><div class="val" id="barVal">0</div></div>
+  <button type="button" class="btn primary" id="btnView">Показать акт</button>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+  document.documentElement.lang = 'ru';
+  var KEY = 'akt-master-v4', HKEY = 'akt-master-acts-v1';
+  var SV = 'width="18" height="18" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"';
+  var ICONS = {
+    tile: '<svg ' + SV + '><rect x="2" y="2" width="7" height="7" rx="1"/><rect x="11" y="2" width="7" height="7" rx="1" opacity=".5"/><rect x="2" y="11" width="7" height="7" rx="1" opacity=".5"/><rect x="11" y="11" width="7" height="7" rx="1"/></svg>',
+    plaster: '<svg ' + SV + '><rect x="2" y="3" width="16" height="3.5" rx="1"/><path d="M4.5 9h11l-1.5 8H6z"/></svg>',
+    paint: '<svg ' + SV + '><rect x="3" y="3" width="12" height="5" rx="1.5"/><path d="M15 5.5h2v5H9v3" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="8" y="13" width="2.4" height="5" rx="1"/></svg>',
+    gkl: '<svg ' + SV + '><rect x="3" y="3" width="14" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 10h14M10 3v14" stroke="currentColor" stroke-width="1.6"/></svg>',
+    floor: '<svg ' + SV + '><rect x="2" y="3" width="16" height="4" rx="1"/><rect x="2" y="8.5" width="16" height="4" rx="1" opacity=".6"/><rect x="2" y="14" width="16" height="3.5" rx="1" opacity=".35"/></svg>',
+    plumb: '<svg ' + SV + '><path d="M10 2.5c3 3.6 5 6 5 8.6a5 5 0 0 1-10 0c0-2.6 2-5 5-8.6z"/></svg>',
+    elec: '<svg ' + SV + '><path d="M11 2 4.5 11H9l-1 7 7-9.5h-4.5z"/></svg>',
+    other: '<svg ' + SV + '><circle cx="4.5" cy="10" r="2"/><circle cx="10" cy="10" r="2"/><circle cx="15.5" cy="10" r="2"/></svg>'
+  };
+
+  /* Единицы измерения простыми словами */
+  var WHOLE = 'за всю работу';
+  var U_CUSTOM = ['м²', 'пог. м', 'шт.', 'точка', 'отверстие', 'час', 'рейс', WHOLE];
+  var UL = {
+    'м²': ['Площадь, м²', 'Цена за м²'],
+    'пог. м': ['Длина, пог. м', 'Цена за пог. м'],
+    'шт.': ['Количество, шт.', 'Цена за штуку'],
+    'точка': ['Количество, точек', 'Цена за точку'],
+    'отверстие': ['Количество отверстий', 'Цена за отверстие'],
+    'час': ['Время, ч', 'Цена за час'],
+    'рейс': ['Количество рейсов', 'Цена за рейс']
+  };
+  var UFULL = {
+    'м²': 'Квадратные метры (м²)', 'пог. м': 'Погонные метры (пог. м)', 'шт.': 'Штуки (шт.)',
+    'точка': 'Точки', 'отверстие': 'Отверстия', 'час': 'Часы', 'рейс': 'Рейсы'
+  };
+  var UHELP = {
+    'м²': 'Квадратный метр: площадь, то есть длина × ширина. Так считают пол, стены, потолок.',
+    'пог. м': 'Погонный метр: длина по прямой линии. Так считают запил под 45°, плинтус, швы, кабель.',
+    'шт.': 'Штуки: каждая вещь отдельно, например розетка, унитаз или поддон.',
+    'точка': 'Точка: одно место подключения воды, канализации или электричества.',
+    'отверстие': 'Отверстие: каждое просверлённое отверстие в плитке или стене.',
+    'час': 'Часы: сколько часов работал мастер.',
+    'рейс': 'Рейс: одна поездка, например вывоз мусора.'
+  };
+  UHELP[WHOLE] = 'Одна общая цена за всю работу целиком, без подсчёта объёма.';
+  var FORMS = {
+    'точка': ['точка', 'точки', 'точек'], 'отверстие': ['отверстие', 'отверстия', 'отверстий'],
+    'час': ['час', 'часа', 'часов'], 'рейс': ['рейс', 'рейса', 'рейсов']
+  };
+  function labelsFor(u) { return u === WHOLE ? [null, 'Стоимость работы'] : (UL[u] || ['Количество', 'Цена за единицу']); }
+  function unitFull(u) { return u === WHOLE ? 'За всю работу' : (UFULL[u] || u); }
+  function unitShort(u) { return u === WHOLE ? 'за всю работу' : u; }
+
+  var PLACES = ['Зал', 'Спальня', 'Кухня', 'Коридор', 'Прихожая', 'Санузел', 'Ванная комната', 'Душевая кабина', 'Поддон душа', 'Балкон', 'Лоджия'];
+
+  function W(name, unit, hints, units) { return { name: name, unit: unit, hints: hints || [], units: units || [unit, WHOLE] }; }
+  var SIZES = ['плитка 30×30', 'плитка 30×60', 'плитка 60×60', 'плитка 60×120', 'керамогранит 120×240'];
+  var CAT = [
+    { id: 'tile', name: 'Плитка', works: [
+      W('Укладка плитки на пол', 'м²', SIZES.concat(['тёплый пол под плиткой'])),
+      W('Укладка плитки на стены', 'м²', SIZES.concat(['фартук кухни'])),
+      W('Диагональная укладка плитки', 'м²', SIZES.slice(0, 4).concat(['пол', 'стены'])),
+      W('Укладка крупноформатного керамогранита', 'м²', ['60×120', '120×120', '120×240', 'пол', 'стены']),
+      W('Укладка мозаики', 'м²', ['мозаика 30×30', 'стеклянная мозаика', 'на сетке', 'стены', 'пол']),
+      W('Запил кромки плитки под 45°', 'пог. м', ['Наружные углы душевой ниши', 'Углы откосов', 'Внешние углы стен', 'Ступени', 'Подоконник']),
+      W('Облицовка стен душевой кабины плиткой', 'м²', SIZES.slice(0, 4).concat(['ниша', 'с запилом под 45°'])),
+      W('Облицовка поддона душевой плиткой', 'м²', ['мозаика 30×30', 'плитка 30×30', 'с уклоном к трапу']),
+      W('Устройство поддона душевой кабины под плитку', 'шт.', ['с уклоном к трапу', 'с линейным трапом', 'размер 90×90', 'размер 100×80']),
+      W('Сверление отверстий в плитке', 'отверстие', ['под розетки', 'под трубы', 'под смеситель', 'алмазная коронка'], ['отверстие', WHOLE]),
+      W('Затирка швов плитки', 'м²', ['по площади плитки', 'цементная затирка', 'эпоксидная затирка', 'шов 2 мм', 'шов 3 мм']),
+      W('Затирка швов (по длине швов)', 'пог. м', ['цементная затирка', 'эпоксидная затирка']),
+      W('Гидроизоляция пола и стен', 'м²', ['обмазочная', 'в два слоя', 'с лентой в углах', 'зона душа']),
+      W('Установка уголков и профиля для плитки', 'пог. м', ['алюминиевый', 'пластиковый', 'декоративный']),
+      W('Стяжка пола под плитку', 'м²', ['полусухая', 'толщина 50 мм', 'с армированием']),
+      W('Демонтаж старой плитки', 'м²', ['со стен', 'с пола', 'с вывозом мусора'])
+    ]},
+    { id: 'plaster', name: 'Штукатурка', works: [
+      W('Штукатурка стен по маякам', 'м²', ['гипсовая', 'цементная', 'машинным способом', 'слой до 20 мм', 'слой до 30 мм']),
+      W('Штукатурка потолка', 'м²', ['гипсовая', 'цементная', 'по маякам']),
+      W('Штукатурка откосов', 'пог. м', ['окна', 'двери', 'с установкой уголков']),
+      W('Установка маяков под штукатурку', 'пог. м', ['на гипс', 'на цемент']),
+      W('Установка уголков под штукатурку', 'пог. м', ['оцинкованные', 'с сеткой']),
+      W('Грунтовка перед штукатуркой', 'м²', ['бетоноконтакт', 'глубокого проникновения']),
+      W('Армирование стен сеткой', 'м²', ['штукатурная сетка', 'стеклосетка']),
+      W('Заделка штроб и трещин', 'пог. м', ['гипсом', 'цементным раствором'])
+    ]},
+    { id: 'paint', name: 'Малярка', works: [
+      W('Грунтовка стен', 'м²', ['в один слой', 'в два слоя', 'глубокого проникновения']),
+      W('Шпаклёвка стен под покраску', 'м²', ['финишная', 'в два слоя', 'старт и финиш']),
+      W('Покраска стен', 'м²', ['водоэмульсионная краска', 'в два слоя', 'матовая', 'моющаяся']),
+      W('Покраска потолка', 'м²', ['водоэмульсионная краска', 'в два слоя', 'белая']),
+      W('Поклейка обоев', 'м²', ['флизелиновые', 'под покраску', 'виниловые', 'с подгонкой рисунка']),
+      W('Нанесение декоративной штукатурки', 'м²', ['венецианская', 'короед', 'шёлк']),
+      W('Отделка откосов окон и дверей', 'пог. м', ['окна', 'двери', 'шпаклёвка и покраска']),
+      W('Покраска радиаторов и труб', 'шт.', ['радиатор', 'трубы', 'эмаль'])
+    ]},
+    { id: 'gkl', name: 'Гипсокартон', works: [
+      W('Обшивка стен гипсокартоном', 'м²', ['на каркасе', 'на клей', 'влагостойкий ГКЛВ', 'в один слой', 'в два слоя']),
+      W('Монтаж подвесного потолка из гипсокартона', 'м²', ['одноуровневый', 'на каркасе', 'влагостойкий ГКЛВ']),
+      W('Монтаж многоуровневого потолка из гипсокартона', 'м²', ['двухуровневый', 'со световой нишей', 'с подсветкой']),
+      W('Монтаж перегородки из гипсокартона', 'м²', ['в два слоя', 'с шумоизоляцией', 'с проёмом под дверь']),
+      W('Изготовление арки или ниши из гипсокартона', 'шт.', ['арка', 'ниша', 'с подсветкой']),
+      W('Шпаклёвка швов и углов гипсокартона', 'м²', ['с армирующей лентой', 'финишная']),
+      W('Монтаж короба из гипсокартона для труб', 'пог. м', ['для стояков', 'с лючком', 'влагостойкий ГКЛВ'])
+    ]},
+    { id: 'floor', name: 'Полы', works: [
+      W('Укладка ламината', 'м²', ['32 класс', '33 класс', 'с подложкой', 'по диагонали', 'на тёплый пол']),
+      W('Укладка паркетной доски', 'м²', ['замковая', 'на клей', 'ёлочкой']),
+      W('Укладка линолеума', 'м²', ['бытовой', 'полукоммерческий', 'с проваркой швов']),
+      W('Монтаж плинтуса', 'пог. м', ['пластиковый', 'МДФ', 'напольный', 'потолочный']),
+      W('Устройство подложки под покрытие', 'м²', ['пробковая', 'пенополиэтилен'])
+    ]},
+    { id: 'plumb', name: 'Сантехника', works: [
+      W('Установка унитаза', 'шт.', ['подвесной с инсталляцией', 'напольный', 'моноблок']),
+      W('Установка раковины', 'шт.', ['с тумбой', 'подвесная', 'накладная']),
+      W('Установка смесителя', 'шт.', ['на раковину', 'на ванну', 'для душа', 'для кухни']),
+      W('Установка ванны', 'шт.', ['акриловая', 'стальная', 'чугунная', 'с экраном']),
+      W('Установка душевой кабины', 'шт.', ['с поддоном', 'с готовым трапом', 'угловая']),
+      W('Разводка водопроводных труб', 'точка', ['полипропилен', 'металлопластик', 'горячая и холодная вода'], ['точка', 'пог. м', WHOLE]),
+      W('Монтаж канализации', 'точка', ['трубы 50 мм', 'трубы 110 мм', 'с ревизией'], ['точка', 'пог. м', WHOLE]),
+      W('Установка водонагревателя', 'шт.', ['накопительный', 'проточный', 'с предохранительным клапаном']),
+      W('Установка полотенцесушителя', 'шт.', ['водяной', 'электрический', 'с запорными кранами']),
+      W('Подключение стиральной машины', 'шт.', ['с выводом на канализацию', 'со сливным сифоном'])
+    ]},
+    { id: 'elec', name: 'Электрика', works: [
+      W('Прокладка электрического кабеля', 'пог. м', ['в гофре', 'в штробе', 'открытая проводка', 'ВВГнг 3×2,5']),
+      W('Штробление стен под кабель', 'пог. м', ['кирпич', 'бетон', 'гипсокартон']),
+      W('Сверление отверстий под подрозетники', 'отверстие', ['в бетон', 'в кирпич', 'в плитке'], ['отверстие', WHOLE]),
+      W('Установка подрозетников', 'шт.', ['в бетон', 'в кирпич', 'в гипсокартон']),
+      W('Установка розеток', 'шт.', ['в готовые подрозетники', 'с заземлением', 'влагозащищённые']),
+      W('Установка выключателей', 'шт.', ['одноклавишные', 'двухклавишные', 'проходные']),
+      W('Установка светильников', 'шт.', ['точечные', 'накладные', 'трековые']),
+      W('Монтаж люстры', 'шт.', ['на потолок', 'на крюк', 'с пультом']),
+      W('Сборка электрощита', 'шт.', ['с автоматами', 'с УЗО', 'навесной']),
+      W('Подключение электросчётчика', 'шт.', ['однофазный', 'трёхфазный'])
+    ]},
+    { id: 'other', name: 'Прочее', works: [
+      W('Демонтажные работы', 'м²', ['стены', 'полы', 'потолок', 'с вывозом мусора']),
+      W('Вывоз строительного мусора', 'рейс', ['газель', 'мешки', 'с грузчиками']),
+      W('Выезд мастера на замеры', 'шт.', ['замеры', 'оценка стоимости']),
+      W('Работа по часам', 'час', ['помощник', 'мелкий ремонт'], ['час']),
+      W('Подъём материалов на этаж', WHOLE, ['без лифта', 'с лифтом'], [WHOLE])
+    ]}
+  ];
+  function findWork(name) {
+    for (var i = 0; i < CAT.length; i++) for (var j = 0; j < CAT[i].works.length; j++) if (CAT[i].works[j].name === name) return CAT[i].works[j];
+    return null;
+  }
+  function catName(id) { for (var i = 0; i < CAT.length; i++) if (CAT[i].id === id) return CAT[i].name; return 'Прочее'; }
+
+  var CUR = { rub: { label: 'руб.', words: ['рубль', 'рубля', 'рублей'], cents: ['копейка', 'копейки', 'копеек'], dec: 2 } };
+
+  /* Утилиты */
+  function $(id) { return document.getElementById(id); }
+  function uid() { return Math.random().toString(36).slice(2, 9); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function num(v) { var n = parseFloat(String(v == null ? '' : v).replace(/\s/g, '').replace(',', '.')); return isFinite(n) ? n : 0; }
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    var p = iso.split('-').map(Number);
+    if (p.length < 3 || !p[0]) return '';
+    return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }) + ' г.';
+  }
+  function copyOf(x) { return JSON.parse(JSON.stringify(x)); }
+
+  /* Сумма прописью */
+  var O = ['', 'один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять'];
+  var OF = ['', 'одна', 'две', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять'];
+  var T = ['десять', 'одиннадцать', 'двенадцать', 'тринадцать', 'четырнадцать', 'пятнадцать', 'шестнадцать', 'семнадцать', 'восемнадцать', 'девятнадцать'];
+  var TE = ['', '', 'двадцать', 'тридцать', 'сорок', 'пятьдесят', 'шестьдесят', 'семьдесят', 'восемьдесят', 'девяносто'];
+  var H = ['', 'сто', 'двести', 'триста', 'четыреста', 'пятьсот', 'шестьсот', 'семьсот', 'восемьсот', 'девятьсот'];
+  function triad(n, fem) {
+    var w = [H[Math.floor(n / 100)]], r = n % 100;
+    if (r >= 10 && r < 20) w.push(T[r - 10]);
+    else { w.push(TE[Math.floor(r / 10)]); w.push((fem ? OF : O)[r % 10]); }
+    return w.filter(Boolean).join(' ');
+  }
+  function plural(n, f) {
+    var a = n % 100, b = n % 10;
+    if (a > 10 && a < 20) return f[2];
+    if (b === 1) return f[0];
+    if (b > 1 && b < 5) return f[1];
+    return f[2];
+  }
+  function intWords(n) {
+    if (n === 0) return 'ноль';
+    var groups = [
+      [1e9, ['миллиард', 'миллиарда', 'миллиардов'], false],
+      [1e6, ['миллион', 'миллиона', 'миллионов'], false],
+      [1e3, ['тысяча', 'тысячи', 'тысяч'], true]
+    ], out = [], rest = n;
+    groups.forEach(function (g) {
+      var q = Math.floor(rest / g[0]);
+      if (q > 0) { out.push(triad(q % 1000, g[2]) + ' ' + plural(q, g[1])); rest = rest % g[0]; }
+    });
+    if (rest > 0) out.push(triad(rest, false));
+    return out.join(' ');
+  }
+  function moneyWords(x, cur) {
+    if (x >= 1e12) return '';
+    var rounded = cur.dec ? Math.round(x * 100) / 100 : Math.round(x);
+    var whole = Math.floor(rounded), cents = cur.dec ? Math.round((rounded - whole) * 100) : 0;
+    var s = intWords(whole);
+    s = s.charAt(0).toUpperCase() + s.slice(1) + ' ' + plural(whole, cur.words);
+    if (cur.cents) s += ' ' + String(cents).padStart(2, '0') + ' ' + plural(cents, cur.cents);
+    return s;
+  }
+
+  /* Расчёты */
+  function cur() { return CUR.rub; }
+  function round(x) { return Math.round(x * 100) / 100; }
+  function money(x) { return round(x).toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
+  function qtyFmt(v) { return num(v).toLocaleString('ru-RU', { maximumFractionDigits: 2 }); }
+  function qtyOf(it) { return it.unit === WHOLE ? 1 : num(it.qty); }
+  function lineSum(it) { return qtyOf(it) * num(it.price); }
+  function volText(it) {
+    if (it.unit === WHOLE) return 'за всю работу';
+    var q = num(it.qty);
+    if (!q) return '—';
+    var f = FORMS[it.unit], word = it.unit;
+    if (f) word = q === Math.floor(q) ? plural(q, f) : f[1];
+    return qtyFmt(it.qty) + ' ' + word;
+  }
+  function detailText(it) {
+    return [(it.places || []).join(', '), (it.tags || []).join(', '), String(it.note || '').trim()].filter(Boolean).join(' · ');
+  }
+  function calc(st) {
+    st = st || state;
+    var total = 0;
+    st.items.forEach(function (it) { total += lineSum(it); });
+    total = round(total);
+    var discount = round(num(st.meta.discount)), advance = round(num(st.meta.advance));
+    return { total: total, discount: discount, advance: advance, pay: Math.max(0, round(total - discount - advance)) };
+  }
+
+  /* Состояние */
+  function normItem(it) {
+    if (it.unit === 'компл.') { it.unit = WHOLE; it.qty = '1'; }
+    if (!it.units) it.units = U_CUSTOM;
+    if (!it.hints) it.hints = [];
+    if (!Array.isArray(it.places)) it.places = [];
+    if (!Array.isArray(it.tags)) it.tags = [];
+    if (it.note == null) it.note = '';
+    return it;
+  }
+  function blankMeta() {
+    return { number: '1', date: todayISO(), title: '', currency: 'rub', city: '', address: '', client: '', clientPhone: '', worker: '', workerPhone: '', discount: '', advance: '', warranty: '12', notes: '', template: 'business', signMode: 'line', workerOk: true, clientOk: false, docTitle: '', intro: '', closing: '' };
+  }
+  function sample() {
+    function it(cat, name, unit, qty, price, places, tags) {
+      var w = findWork(name) || {};
+      return { id: uid(), cat: cat, name: name, unit: unit, units: w.units || U_CUSTOM, hints: w.hints || [], qty: qty, price: price, places: places || [], tags: tags || [], note: '' };
+    }
+    return {
+      id: uid(), sample: true, cats: ['tile'],
+      meta: { number: '1', date: todayISO(), title: 'Ремонт ванной комнаты', currency: 'rub', city: 'Москва',
+        address: 'ул. Примерная, д. 1, кв. 1', client: 'Иванов Иван Иванович', clientPhone: '+7 900 000-00-00',
+        worker: 'Исполнитель (пример)', workerPhone: '+7 900 000-00-01', discount: '', advance: '10 000',
+        warranty: '12', notes: 'Плитка и клей предоставлены заказчиком.', template: 'business', signMode: 'line', workerOk: true, clientOk: false },
+      items: [
+        it('tile', 'Укладка плитки на стены', 'м²', '24', '1 800', ['Ванная комната'], ['плитка 30×60']),
+        it('tile', 'Диагональная укладка плитки', 'м²', '6', '2 200', ['Ванная комната'], ['плитка 60×60', 'пол']),
+        it('tile', 'Запил кромки плитки под 45°', 'пог. м', '8', '600', ['Душевая кабина'], ['Наружные углы душевой ниши']),
+        it('tile', 'Устройство поддона душевой кабины под плитку', 'шт.', '1', '15 000', ['Душевая кабина'], ['с уклоном к трапу']),
+        it('tile', 'Затирка швов плитки', 'м²', '30', '250', ['Ванная комната'], ['эпоксидная затирка'])
+      ]
+    };
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return null;
+      var s = JSON.parse(raw);
+      if (s && s.meta && Array.isArray(s.items)) {
+        s.meta = Object.assign(blankMeta(), s.meta);
+        s.cats = Array.isArray(s.cats) && s.cats.length ? s.cats : ['tile'];
+        s.id = s.id || uid();
+        s.items = s.items.map(normItem);
+        return s;
+      }
+    } catch (e) {}
+    return null;
+  }
+  var state = load() || sample();
+
+  /* История актов */
+  function loadHist() {
+    try { var a = JSON.parse(localStorage.getItem(HKEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+  }
+  function saveHist(list) { try { localStorage.setItem(HKEY, JSON.stringify(list)); } catch (e) {} }
+  function isEmptyAct(st) { return !st.items.length && !(st.meta.client || st.meta.address || st.meta.title); }
+  function upsertHistory() {
+    if (state.sample || isEmptyAct(state)) return;
+    var list = loadHist(), snap = copyOf({ id: state.id, meta: state.meta, items: state.items });
+    snap.updated = Date.now();
+    var i = -1;
+    list.forEach(function (a, k) { if (a.id === state.id) i = k; });
+    if (i === -1) list.unshift(snap); else list[i] = snap;
+    list.sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); });
+    saveHist(list.slice(0, 200));
+  }
+  function nextNumber() {
+    var max = 0;
+    loadHist().forEach(function (a) { var n = parseInt(a.meta && a.meta.number, 10); if (isFinite(n) && n > max) max = n; });
+    return max + 1;
+  }
+  function persist() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    upsertHistory(); updateHistBtn();
+  }
+  var saveTimer = null;
+  function save() { clearTimeout(saveTimer); saveTimer = setTimeout(persist, 250); }
+  function flush() { clearTimeout(saveTimer); persist(); }
+  function updateHistBtn() {
+    var n = loadHist().length;
+    $('btnHistory').textContent = n ? 'История (' + n + ')' : 'История';
+  }
+
+  /* Форма */
+  function bindMeta() {
+    document.querySelectorAll('[data-key]').forEach(function (el) {
+      el.value = state.meta[el.dataset.key] == null ? '' : state.meta[el.dataset.key];
+      var ev = el.tagName === 'SELECT' ? 'change' : 'input';
+      el.addEventListener(ev, function () {
+        if (el.dataset.key === 'number') el.value = el.value.replace(/\D/g, '');
+        state.meta[el.dataset.key] = el.value; edit();
+      });
+    });
+  }
+  function syncMeta() {
+    document.querySelectorAll('[data-key]').forEach(function (el) { el.value = state.meta[el.dataset.key] == null ? '' : state.meta[el.dataset.key]; });
+  }
+  function touch() { if (state.sample) { state.sample = false; $('banner').hidden = true; } }
+  function edit() { touch(); refresh(); }
+
+  /* Виды работ (можно выбрать несколько) */
+  function renderCats() {
+    var box = $('cats'); box.textContent = '';
+    CAT.forEach(function (c) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'cat-btn';
+      var n = state.items.filter(function (x) { return x.cat === c.id; }).length;
+      b.innerHTML = (ICONS[c.id] || '') + '<span>' + esc(c.name) + '</span>' + (n ? '<span class="cnt">' + n + '</span>' : '');
+      b.setAttribute('aria-pressed', state.cats.indexOf(c.id) !== -1 ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        var i = state.cats.indexOf(c.id);
+        if (i === -1) state.cats.push(c.id); else if (state.cats.length > 1) state.cats.splice(i, 1);
+        renderCats(); renderWorks(); save();
+      });
+      box.appendChild(b);
+    });
+  }
+  function renderWorks() {
+    var box = $('works'); box.textContent = '';
+    var q = $('workSearch').value.trim().toLowerCase();
+    var groups = CAT.filter(function (c) { return q ? true : state.cats.indexOf(c.id) !== -1; }).map(function (c) {
+      return { c: c, ws: c.works.filter(function (w) { return !q || w.name.toLowerCase().indexOf(q) !== -1; }) };
+    }).filter(function (g) { return g.ws.length; });
+    if (!groups.length) {
+      var e = document.createElement('div'); e.className = 'empty';
+      e.textContent = 'Ничего не найдено. Добавьте свою работу кнопкой ниже.';
+      box.appendChild(e); return;
+    }
+    groups.forEach(function (g) {
+      var wrap = document.createElement('div'); wrap.className = 'wgroup';
+      var h = document.createElement('h3'); h.innerHTML = (ICONS[g.c.id] || '') + '<span>' + esc(g.c.name) + '</span>';
+      var list = document.createElement('div'); list.className = 'wlist';
+      g.ws.forEach(function (w) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'work-chip';
+        b.innerHTML = '<span>' + esc(w.name) + '</span> <small>' + esc(unitShort(w.unit)) + '</small>';
+        b.addEventListener('click', function () { addItem(w, g.c.id); });
+        list.appendChild(b);
+      });
+      wrap.appendChild(h); wrap.appendChild(list); box.appendChild(wrap);
+    });
+  }
+
+  function addItem(w, cat) {
+    var it = { id: uid(), cat: cat, name: w.name, unit: w.unit, units: w.units, hints: w.hints, qty: w.unit === WHOLE ? '1' : '', price: '', places: [], tags: [], note: '' };
+    state.items.push(it);
+    var sec = document.querySelector('details[data-sec="s4"]'); if (sec) sec.open = true;
+    renderItems(); edit();
+    toast(w.name ? 'Добавлено: ' + w.name : 'Добавлена своя работа');
+    var t = $((w.name ? (it.unit === WHOLE ? 'p-' : 'q-') : 'n-') + it.id);
+    if (t) { t.scrollIntoView({ block: 'center', behavior: 'smooth' }); t.focus({ preventScroll: true }); }
+  }
+
+  function buildChips(box, values, selected, onChange) {
+    values.forEach(function (v) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.textContent = v;
+      b.setAttribute('aria-pressed', selected.indexOf(v) !== -1 ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        var i = selected.indexOf(v);
+        if (i === -1) selected.push(v); else selected.splice(i, 1);
+        b.setAttribute('aria-pressed', i === -1 ? 'true' : 'false');
+        onChange();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function renderItems() {
+    var box = $('items'); box.textContent = '';
+    if (!state.items.length) {
+      var e = document.createElement('div'); e.className = 'empty';
+      e.textContent = 'Работ пока нет. Выберите вид работ выше и нажмите на нужную работу.';
+      box.appendChild(e); return;
+    }
+    state.items.forEach(function (it) {
+      var units = (it.units && it.units.length ? it.units : U_CUSTOM).slice();
+      if (units.indexOf(it.unit) === -1) units.unshift(it.unit);
+      var hints = (it.hints || []).slice(0, 8);
+      var row = document.createElement('div'); row.className = 'item';
+      row.innerHTML =
+        '<div class="item-top"><label class="sr" for="n-' + it.id + '">Название работы</label>' +
+        '<input type="text" id="n-' + it.id + '" class="in-name" autocapitalize="sentences" autocomplete="off" placeholder="Название работы">' +
+        '<button type="button" class="del" aria-label="Удалить работу">×</button></div>' +
+        '<div class="item-nums" id="nums-' + it.id + '">' +
+        '<div class="fld unit"><label for="u-' + it.id + '">Как считаем</label><select id="u-' + it.id + '" class="in-unit">' +
+        units.map(function (u) { return '<option value="' + esc(u) + '"' + (u === it.unit ? ' selected' : '') + '>' + esc(unitFull(u)) + '</option>'; }).join('') + '</select></div>' +
+        '<div class="fld" id="fq-' + it.id + '"><label id="lq-' + it.id + '" for="q-' + it.id + '"></label><input type="text" id="q-' + it.id + '" class="in-qty" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0"></div>' +
+        '<div class="fld price"><label id="lp-' + it.id + '" for="p-' + it.id + '"></label><input type="text" id="p-' + it.id + '" class="in-price" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0"></div>' +
+        '</div>' +
+        '<p class="unit-help"></p>' +
+        '<div class="item-foot"><span>' + esc(catName(it.cat)) + '</span><span>Сумма: <strong class="sum"></strong></span></div>' +
+        '<div class="fld"><span class="lbl">Где выполнена работа</span><div class="chips places" role="group" aria-label="Помещение, можно выбрать несколько"></div></div>' +
+        '<div class="fld"><label for="d-' + it.id + '">Уточнение к работе</label>' +
+        (hints.length ? '<div class="chips tags" role="group" aria-label="Готовые варианты уточнения, можно выбрать несколько"></div>' : '') +
+        '<input type="text" id="d-' + it.id + '" class="in-note" placeholder="Или впишите свой текст"></div>';
+      var inName = row.querySelector('.in-name'), inNote = row.querySelector('.in-note'), inQty = row.querySelector('.in-qty'),
+          inUnit = row.querySelector('.in-unit'), inPrice = row.querySelector('.in-price'), sum = row.querySelector('.sum'),
+          help = row.querySelector('.unit-help'),
+          lq = row.querySelector('#lq-' + it.id), lp = row.querySelector('#lp-' + it.id),
+          fq = row.querySelector('#fq-' + it.id), nums = row.querySelector('#nums-' + it.id),
+          prevUnit = it.unit;
+      inName.value = it.name; inNote.value = it.note || ''; inQty.value = it.qty; inPrice.value = it.price;
+      function upd() { sum.textContent = money(lineSum(it)) + ' ' + cur().label; }
+      function applyUnit() {
+        var whole = it.unit === WHOLE, l = labelsFor(it.unit);
+        lq.textContent = l[0] || ''; lp.textContent = l[1];
+        help.textContent = UHELP[it.unit] || '';
+        fq.hidden = whole; nums.classList.toggle('whole', whole);
+        if (whole) { it.qty = '1'; }
+        else if (prevUnit === WHOLE) { it.qty = ''; inQty.value = ''; }
+        prevUnit = it.unit; upd();
+      }
+      buildChips(row.querySelector('.places'), PLACES, it.places, edit);
+      var tagsBox = row.querySelector('.tags');
+      if (tagsBox) buildChips(tagsBox, hints, it.tags, edit);
+      applyUnit();
+      inName.addEventListener('input', function () { it.name = inName.value; edit(); });
+      inNote.addEventListener('input', function () { it.note = inNote.value; edit(); });
+      inQty.addEventListener('input', function () { it.qty = inQty.value; upd(); edit(); });
+      inUnit.addEventListener('change', function () { it.unit = inUnit.value; applyUnit(); edit(); });
+      inPrice.addEventListener('input', function () { it.price = inPrice.value; upd(); edit(); });
+      inPrice.addEventListener('blur', function () {
+        var n = num(inPrice.value);
+        if (n > 0) { it.price = n.toLocaleString('ru-RU', { maximumFractionDigits: 2 }); inPrice.value = it.price; save(); }
+      });
+      row.querySelector('.del').addEventListener('click', function () {
+        state.items = state.items.filter(function (x) { return x.id !== it.id; });
+        renderItems(); edit();
+      });
+      box.appendChild(row);
+    });
+  }
+
+  function renderSums() {
+    var c = calc(), l = cur().label, h = '';
+    h += '<div class="sum-row"><span>Итого за работы</span><span>' + money(c.total) + ' ' + l + '</span></div>';
+    if (c.discount) h += '<div class="sum-row"><span>Скидка</span><span>− ' + money(c.discount) + ' ' + l + '</span></div>';
+    if (c.advance) h += '<div class="sum-row"><span>Аванс</span><span>− ' + money(c.advance) + ' ' + l + '</span></div>';
+    h += '<div class="sum-row big"><span>К оплате</span><span>' + money(c.pay) + ' ' + l + '</span></div>';
+    $('sumBox').innerHTML = h;
+    $('barVal').textContent = money(c.pay) + ' ' + l;
+  }
+
+  /* Акт */
+  function blank(v) { return v ? esc(v) : '<span class="blank"></span>'; }
+  var DEF = {
+    title: 'Акт выполненных работ',
+    intro: 'Исполнитель выполнил, а Заказчик принял следующие работы:',
+    closing: 'Работы выполнены в полном объёме. Заказчик осмотрел результат и претензий по объёму, качеству и срокам не имеет.'
+  };
+  function textOr(v, d) { return v && String(v).trim() ? String(v).trim() : d; }
+  var CHECK_SVG = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function okRow(on, text) { return '<div class="okrow"><span class="box' + (on ? ' on' : '') + '">' + (on ? CHECK_SVG : '') + '</span><span>' + text + '</span></div>'; }
+  function signHtml(m) {
+    var mode = m.signMode || 'line';
+    if (mode === 'none') return '';
+    if (mode === 'check') {
+      return '<div class="signs"><div class="sign"><div class="role">Исполнитель</div>' + okRow(m.workerOk, 'Работы сдал') + '<div class="nm">' + esc(m.worker) + '</div></div>' +
+        '<div class="sign"><div class="role">Заказчик</div>' + okRow(m.clientOk, 'Работы принял, претензий нет') + '<div class="nm">' + esc(m.client) + '</div></div></div>';
+    }
+    return '<div class="signs"><div class="sign"><div class="role">Исполнитель</div><div class="line"></div><div class="cap">подпись</div><div class="nm">' + esc(m.worker) + '</div></div>' +
+      '<div class="sign"><div class="role">Заказчик</div><div class="line"></div><div class="cap">подпись</div><div class="nm">' + esc(m.client) + '</div></div></div>';
+  }
+  function renderPaper() {
+    var m = state.meta, c = calc(), l = cur().label, rows = '';
+    if (!state.items.length) {
+      rows = '<tr><td class="empty-row" colspan="5">Работы пока не добавлены</td></tr>';
+    } else {
+      state.items.forEach(function (it, i) {
+        var d = detailText(it);
+        rows += '<tr><td class="n">' + (i + 1) + '</td><td>' + (it.name ? esc(it.name) : '<span class="blank" style="min-width:90px"></span>') + (d ? '<div class="note">' + esc(d) + '</div>' : '') + '</td>' +
+          '<td class="r">' + esc(volText(it)) + '</td>' +
+          '<td class="r">' + (it.unit !== WHOLE && num(it.price) ? money(num(it.price)) : '—') + '</td>' +
+          '<td class="r"><strong>' + money(lineSum(it)) + '</strong></td></tr>';
+      });
+    }
+    function frow(label, val, cls) { return '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td colspan="4" class="lbl">' + label + '</td><td class="r">' + val + '</td></tr>'; }
+    var foot = frow('Итого', money(c.total) + ' ' + l);
+    if (c.discount) foot += frow('Скидка', '− ' + money(c.discount) + ' ' + l);
+    if (c.advance) foot += frow('Аванс получен', '− ' + money(c.advance) + ' ' + l);
+    foot += frow('К оплате', money(c.pay) + ' ' + l, 'pay');
+    var words = moneyWords(c.pay, cur());
+    var wt = m.warranty && num(m.warranty) > 0 ? '<p class="statement">Гарантия на выполненные работы: ' + esc(String(Math.round(num(m.warranty)))) + ' мес.</p>' : '';
+    var notes = m.notes ? '<p class="statement"><span class="th-note">Примечания</span><br>' + esc(m.notes).replace(/\n/g, '<br>') + '</p>' : '';
+    $('paper').className = 'paper paper--' + (m.template === 'compact' ? 'compact' : 'business');
+    $('paper').innerHTML =
+      '<div class="sheet">' +
+      '<div class="p-head"><h3>' + esc(textOr(m.docTitle, DEF.title)) + '</h3><div class="no">№ <strong>' + (m.number ? esc(m.number) : '___') + '</strong><br>' + (m.city ? 'г. ' + esc(m.city) + ', ' : 'от ') + (fmtDate(m.date) || '___') + '</div></div>' +
+      '<p class="p-theme"><span>Тема работ</span><strong>' + (m.title ? esc(m.title) : '<span class="blank" style="min-width:200px"></span>') + '</strong></p>' +
+      '<dl class="parties">' +
+      '<dt>Объект</dt><dd>' + blank(m.address) + '</dd>' +
+      '<dt>Заказчик</dt><dd>' + blank(m.client) + (m.clientPhone ? ', тел. ' + esc(m.clientPhone) : '') + '</dd>' +
+      '<dt>Исполнитель</dt><dd>' + blank(m.worker) + (m.workerPhone ? ', тел. ' + esc(m.workerPhone) : '') + '</dd></dl>' +
+      '<p class="statement">' + esc(textOr(m.intro, DEF.intro)) + '</p>' +
+      '<div class="tbl-wrap"><table><thead><tr><th class="c">№</th><th>Наименование работ</th><th class="r">Объём</th><th class="r">Цена, ' + esc(l) + '</th><th class="r">Сумма, ' + esc(l) + '</th></tr></thead><tbody>' + rows + '</tbody><tfoot>' + foot + '</tfoot></table></div>' +
+      (words ? '<p class="words"><span>К оплате прописью:</span> ' + esc(words) + '</p>' : '') +
+      '<p class="statement">' + esc(textOr(m.closing, DEF.closing)) + '</p>' +
+      wt + notes +
+      signHtml(m) +
+      '</div>';
+  }
+
+  function actText() {
+    var m = state.meta, c = calc(), l = cur().label, t = [];
+    t.push(textOr(m.docTitle, DEF.title).toUpperCase() + ' № ' + (m.number || '___') + (m.city ? ', г. ' + m.city + ',' : '') + ' от ' + (fmtDate(m.date) || '___'));
+    if (m.title) t.push('Тема: ' + m.title);
+    t.push('Объект: ' + (m.address || '___'));
+    t.push('Заказчик: ' + (m.client || '___') + (m.clientPhone ? ', тел. ' + m.clientPhone : ''));
+    t.push('Исполнитель: ' + (m.worker || '___') + (m.workerPhone ? ', тел. ' + m.workerPhone : ''));
+    t.push('');
+    state.items.forEach(function (it, i) {
+      var d = detailText(it);
+      t.push((i + 1) + '. ' + (it.name || '___') + (d ? ' (' + d + ')' : '') + ' — ' +
+        (it.unit === WHOLE ? 'за всю работу: ' + money(lineSum(it)) : volText(it) + ' × ' + money(num(it.price)) + ' = ' + money(lineSum(it))) + ' ' + l);
+    });
+    t.push('');
+    t.push('Итого: ' + money(c.total) + ' ' + l);
+    if (c.discount) t.push('Скидка: ' + money(c.discount) + ' ' + l);
+    if (c.advance) t.push('Аванс: ' + money(c.advance) + ' ' + l);
+    t.push('К оплате: ' + money(c.pay) + ' ' + l + ' (' + moneyWords(c.pay, cur()) + ')');
+    if (m.warranty && num(m.warranty) > 0) t.push('Гарантия: ' + Math.round(num(m.warranty)) + ' мес.');
+    if (m.notes) t.push('Примечания: ' + m.notes);
+    if (m.signMode === 'check') {
+      t.push('Исполнитель сдал работы: ' + (m.workerOk ? 'да' : 'нет'));
+      t.push('Заказчик принял работы, претензий нет: ' + (m.clientOk ? 'да' : 'нет'));
+    }
+    return t.join('\n');
+  }
+
+  var TPL = [['business', 'Деловой'], ['compact', 'Компактный']];
+  var SIGNS = [['line', 'Место для подписи'], ['check', 'Галочка «Принято»'], ['none', 'Без подписей']];
+  var WARR = [['', 'Без гарантии'], ['3', '3 мес.'], ['6', '6 мес.'], ['12', '12 мес.'], ['24', '24 мес.']];
+  function chipRow(box, items, current, onPick) {
+    box.textContent = '';
+    items.forEach(function (x) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.textContent = x[1];
+      b.setAttribute('aria-pressed', x[0] === current ? 'true' : 'false');
+      b.addEventListener('click', function () { onPick(x[0]); });
+      box.appendChild(b);
+    });
+  }
+  function renderControls() {
+    var m = state.meta;
+    chipRow($('tplChips'), TPL, m.template === 'compact' ? 'compact' : 'business', function (v) { state.meta.template = v; refresh(); });
+    chipRow($('signChips'), SIGNS, m.signMode || 'line', function (v) { state.meta.signMode = v; edit(); });
+    chipRow($('warrChips'), WARR, String(m.warranty || ''), function (v) { state.meta.warranty = v; $('f-warranty').value = v; edit(); });
+    $('okOpts').hidden = m.signMode !== 'check';
+    $('f-workerOk').checked = !!m.workerOk;
+    $('f-clientOk').checked = !!m.clientOk;
+  }
+  function bindControls() {
+    $('f-workerOk').addEventListener('change', function () { state.meta.workerOk = this.checked; edit(); });
+    $('f-clientOk').addEventListener('change', function () { state.meta.clientOk = this.checked; edit(); });
+  }
+
+  function renderSummaries() {
+    var m = state.meta, c = calc(), l = cur().label;
+    function set(i, t) { var e = $('sm' + i); if (e) e.textContent = t; }
+    set(1, ['№ ' + (m.number || '—'), fmtDate(m.date).replace(' г.', ''), m.city].filter(Boolean).join(' · '));
+    set(2, [m.client, m.address].filter(Boolean).join(' · ') || 'Не заполнено');
+    set(3, [m.worker, m.workerPhone].filter(Boolean).join(' · ') || 'Не заполнено');
+    set(4, state.items.length ? 'Работ: ' + state.items.length + ' · ' + money(c.total) + ' ' + l : 'Пока нет работ');
+    set(5, 'К оплате ' + money(c.pay) + ' ' + l + (num(m.warranty) > 0 ? ' · гарантия ' + Math.round(num(m.warranty)) + ' мес.' : ''));
+    set(6, (m.docTitle || m.intro || m.closing) ? 'Тексты изменены' : 'Стандартные тексты');
+  }
+  var UIKEY = 'akt-master-ui';
+  function loadUi() { try { return JSON.parse(localStorage.getItem(UIKEY) || '{}') || {}; } catch (e) { return {}; } }
+  function initFold() {
+    var ui = loadUi();
+    document.querySelectorAll('details.card').forEach(function (d) {
+      var k = d.dataset.sec;
+      if (ui[k] !== undefined) d.open = !!ui[k];
+      d.addEventListener('toggle', function () {
+        var u = loadUi(); u[k] = d.open;
+        try { localStorage.setItem(UIKEY, JSON.stringify(u)); } catch (e) {}
+      });
+    });
+    function setAll(v) { document.querySelectorAll('details.card').forEach(function (d) { d.open = v; }); }
+    $('btnFoldAll').addEventListener('click', function () { setAll(false); });
+    $('btnUnfoldAll').addEventListener('click', function () { setAll(true); });
+  }
+
+  function refresh() { renderCats(); renderSums(); renderPaper(); renderControls(); renderSummaries(); save(); }
+
+  function toast(msg) {
+    var t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast._t); toast._t = setTimeout(function () { t.hidden = true; }, Math.max(2200, msg.length * 55));
+  }
+
+  /* Экраны */
+  var lastView = 'form';
+  function setView(v) {
+    if (v !== 'history') lastView = v;
+    document.body.dataset.view = v;
+    $('btnView').textContent = v === 'preview' ? '← К данным' : 'Показать акт';
+    if (v === 'history') { flush(); renderHistory(); }
+    window.scrollTo(0, 0);
+  }
+
+  function loadAct(a, view) {
+    flush();
+    state = { id: a.id, sample: false, cats: state.cats, meta: Object.assign(blankMeta(), copyOf(a.meta)), items: copyOf(a.items).map(normItem) };
+    $('banner').hidden = true;
+    syncMeta(); renderWorks(); renderItems(); refresh();
+    setView(view || 'preview');
+  }
+  function newAct() {
+    if (!state.sample && isEmptyAct(state)) { toast('Это уже новый акт'); setView('form'); return; }
+    flush();
+    var n = nextNumber(), prev = state.meta;
+    state = { id: uid(), sample: false, cats: state.cats, meta: blankMeta(), items: [] };
+    state.meta.number = String(n);
+    state.meta.worker = prev.worker; state.meta.workerPhone = prev.workerPhone; state.meta.city = prev.city; state.meta.template = prev.template; state.meta.signMode = prev.signMode;
+    $('banner').hidden = true;
+    syncMeta(); renderItems(); refresh();
+    setView('form');
+    toast('Новый акт № ' + n + '. Прежний сохранён в истории.');
+  }
+  function loadSample() {
+    flush();
+    state = sample();
+    syncMeta(); renderCats(); renderWorks(); renderItems(); $('banner').hidden = false; refresh();
+    setView('form');
+  }
+  function dupAct(a) {
+    var c = copyOf(a);
+    c.id = uid(); c.updated = Date.now();
+    c.meta.number = String(nextNumber()); c.meta.date = todayISO();
+    c.items.forEach(function (x) { x.id = uid(); });
+    var list = loadHist(); list.unshift(c); saveHist(list);
+    loadAct(c, 'form');
+    toast('Создана копия, акт № ' + c.meta.number);
+  }
+  function removeAct(id) {
+    saveHist(loadHist().filter(function (a) { return a.id !== id; }));
+    if (state.id === id) {
+      var prev = state.meta, n = nextNumber();
+      state = { id: uid(), sample: false, cats: state.cats, meta: blankMeta(), items: [] };
+      state.meta.number = String(n); state.meta.worker = prev.worker; state.meta.workerPhone = prev.workerPhone; state.meta.city = prev.city; state.meta.template = prev.template; state.meta.signMode = prev.signMode;
+      syncMeta(); renderItems(); refresh();
+    }
+    updateHistBtn(); renderHistory();
+  }
+
+  function renderHistory() {
+    var list = loadHist(), box = $('histList'); box.textContent = '';
+    $('histCount').textContent = list.length ? 'Сохранено актов: ' + list.length : '';
+    if (!list.length) {
+      var e = document.createElement('div'); e.className = 'empty';
+      e.innerHTML = '<p style="margin:0 0 12px">Пока здесь пусто. Заполните первый акт, и он появится здесь сам.</p><button type="button" class="btn" id="btnSampleH">Показать пример акта</button>';
+      box.appendChild(e);
+      $('btnSampleH').addEventListener('click', loadSample);
+      return;
+    }
+    list.forEach(function (a) {
+      var c = calc(a), card = document.createElement('article'); card.className = 'hcard';
+      var where = [a.meta.city, a.meta.address].filter(Boolean).join(', ');
+      var sub = [a.meta.title, fmtDate(a.meta.date)].filter(Boolean).join(' · ');
+      card.innerHTML =
+        '<div class="h-main"><div class="h-no"><small>Акт</small>№ ' + esc(a.meta.number || '—') + '</div>' +
+        '<div class="h-info"><strong>' + esc(a.meta.client || 'Заказчик не указан') + '</strong><span>' + esc(where || 'Адрес не указан') + '</span><span>' + esc(sub) + '</span></div>' +
+        '<div class="h-sum">' + money(c.pay) + ' ' + cur().label + '</div></div>' +
+        '<div class="h-act"><button type="button" class="btn primary h-open">Открыть</button><button type="button" class="btn h-dup">Сделать копию</button><button type="button" class="btn h-del">Удалить</button></div>';
+      card.querySelector('.h-open').addEventListener('click', function () { loadAct(a, 'preview'); });
+      card.querySelector('.h-dup').addEventListener('click', function () { dupAct(a); });
+      var del = card.querySelector('.h-del'), armed = false, tm = null;
+      del.addEventListener('click', function () {
+        if (!armed) {
+          armed = true; del.textContent = 'Нажмите ещё раз'; del.classList.add('warn');
+          tm = setTimeout(function () { armed = false; del.textContent = 'Удалить'; del.classList.remove('warn'); }, 3500);
+          return;
+        }
+        clearTimeout(tm); removeAct(a.id);
+      });
+      box.appendChild(card);
+    });
+  }
+
+  /* Кнопки */
+  $('btnCustom').addEventListener('click', function () { addItem({ name: '', unit: 'шт.', units: U_CUSTOM, hints: [] }, 'other'); });
+  $('btnNew').addEventListener('click', newAct);
+  $('btnHistory').addEventListener('click', function () { setView('history'); });
+  $('btnBack').addEventListener('click', function () { setView(lastView || 'form'); });
+  $('btnHide').addEventListener('click', function () { $('banner').hidden = true; });
+  $('workSearch').addEventListener('input', renderWorks);
+  $('btnCopy').addEventListener('click', function () {
+    var text = actText();
+    function fallback() {
+      var ta = $('copyFallback'); ta.value = text; ta.hidden = false; ta.focus(); ta.select();
+      toast('Выделите текст и скопируйте вручную');
+    }
+    try {
+      navigator.clipboard.writeText(text).then(function () { $('copyFallback').hidden = true; toast('Текст акта скопирован'); }, fallback);
+    } catch (e) { fallback(); }
+  });
+  $('btnView').addEventListener('click', function () { setView(document.body.dataset.view === 'preview' ? 'form' : 'preview'); });
+  /* Скачать акт: PDF или картинка */
+  var H2C = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  var JSPDF = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  var scripts = {};
+  function loadScript(src) {
+    if (!scripts[src]) {
+      scripts[src] = new Promise(function (res, rej) {
+        var el = document.createElement('script');
+        el.src = src; el.onload = res; el.onerror = function () { delete scripts[src]; rej(new Error('load')); };
+        document.head.appendChild(el);
+      });
+    }
+    return scripts[src];
+  }
+  var CAP_W = 640;
+  function captureCanvas() {
+    var wrap = document.createElement('div'); wrap.className = 'capture';
+    var el = document.createElement('article'); el.className = $('paper').className; el.innerHTML = $('paper').innerHTML;
+    wrap.appendChild(el); document.body.appendChild(wrap);
+    var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    return fonts.then(function () {
+      var h = el.offsetHeight, top = el.getBoundingClientRect().top, cuts = [];
+      el.querySelectorAll('tbody tr, tfoot tr, .sheet > *').forEach(function (n) { cuts.push(Math.round(n.getBoundingClientRect().top - top)); });
+      cuts.sort(function (a, b) { return a - b; });
+      var scale = Math.max(2, Math.min(4, Math.sqrt(14000000 / (CAP_W * h))));
+      return window.html2canvas(el, { scale: scale, backgroundColor: '#ffffff', logging: false, windowWidth: CAP_W }).then(function (canvas) {
+        wrap.remove();
+        return { canvas: canvas, scale: canvas.width / CAP_W, cuts: cuts, height: h };
+      });
+    }).catch(function (e) { wrap.remove(); throw e; });
+  }
+  function pdfBlob(cap) {
+    var pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+    var margin = 10, cw = 210 - margin * 2, ch = 297 - margin * 2;
+    var mmPerPx = cw / CAP_W, pageH = ch / mmPerPx, y = 0, first = true, canvas = cap.canvas;
+    while (y < cap.height - 1) {
+      var end = y + pageH;
+      if (end < cap.height) {
+        var best = 0;
+        cap.cuts.forEach(function (c) { if (c > y + 40 && c <= end && c > best) best = c; });
+        end = best || end;
+      } else { end = cap.height; }
+      var sy = Math.round(y * cap.scale), sh = Math.max(1, Math.min(Math.round((end - y) * cap.scale), canvas.height - sy));
+      var c = document.createElement('canvas'); c.width = canvas.width; c.height = sh;
+      var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, sh);
+      ctx.drawImage(canvas, 0, sy, canvas.width, sh, 0, 0, canvas.width, sh);
+      if (!first) pdf.addPage();
+      pdf.addImage(c.toDataURL('image/png'), 'PNG', margin, margin, cw, (end - y) * mmPerPx, undefined, 'FAST');
+      first = false; y = end;
+    }
+    return pdf.output('blob');
+  }
+  function fileBase() {
+    var m = state.meta, who = m.client ? ' ' + m.client.split(/\s+/)[0] : '';
+    return ('Акт ' + (m.number || 'без номера') + who).replace(/[\\\/:*?"<>|]+/g, ' ').trim();
+  }
+  function saveFile(name, blob) {
+    if (window.claude && window.claude.use) {
+      return window.claude.use('downloads').then(function (dl) {
+        if (!dl) throw { code: 'unavailable' };
+        return dl.save({ filename: name, data: blob });
+      });
+    }
+    return new Promise(function (res) {
+      var url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      res();
+    });
+  }
+  var busy = false, cache = { key: '', blob: null };
+  function exportKey(kind) { return kind + '|' + JSON.stringify([state.meta, state.items]); }
+  function pngBlob(cap) {
+    return new Promise(function (res, rej) { cap.canvas.toBlob(function (b) { if (b) res(b); else rej(new Error('png')); }, 'image/png'); });
+  }
+  function getBlob(kind) {
+    var key = exportKey(kind);
+    if (cache.key === key && cache.blob) return Promise.resolve(cache.blob);
+    return Promise.all((kind === 'pdf' ? [H2C, JSPDF] : [H2C]).map(loadScript))
+      .then(captureCanvas)
+      .then(function (cap) { return kind === 'pdf' ? pdfBlob(cap) : pngBlob(cap); })
+      .then(function (blob) { cache = { key: key, blob: blob }; return blob; });
+  }
+  function withBusy(btn, fn) {
+    if (busy) return;
+    busy = true;
+    var label = btn.textContent; btn.disabled = true; btn.textContent = 'Готовлю файл…';
+    fn().then(null, function () {}).then(function () { busy = false; btn.disabled = false; btn.textContent = label; });
+  }
+  function exportAs(kind) {
+    withBusy(kind === 'pdf' ? $('btnPdf') : $('btnPng'), function () {
+      return getBlob(kind)
+        .then(function (blob) { return saveFile(fileBase() + (kind === 'pdf' ? '.pdf' : '.png'), blob); })
+        .then(function () { toast('Файл сохранён. Отправьте его заказчику в мессенджере или на почту.'); })
+        .catch(function (e) {
+          var code = e && e.code;
+          if (code === 'declined') toast('Сохранение отменено');
+          else if (code === 'unavailable' || code === 'host_unavailable' || code === 'not_granted') toast('Скачивание здесь недоступно. Нажмите «Копировать текст» и отправьте текст акта.');
+          else toast('Не получилось подготовить файл. Проверьте интернет и попробуйте ещё раз.');
+        });
+    });
+  }
+  function shareAct() {
+    var key = exportKey('pdf');
+    function send(blob) {
+      var name = fileBase() + '.pdf';
+      return navigator.share({ files: [new File([blob], name, { type: 'application/pdf' })], title: name });
+    }
+    function fail(e) {
+      var n = e && e.name;
+      if (n === 'AbortError') return;
+      if (n === 'NotAllowedError') toast('Файл готов. Нажмите «Отправить» ещё раз.');
+      else toast('Не получилось отправить. Нажмите «Скачать PDF» и отправьте файл из загрузок.');
+    }
+    if (cache.key === key && cache.blob) { send(cache.blob).catch(fail); return; }
+    withBusy($('btnShare'), function () {
+      return getBlob('pdf').then(
+        function (blob) { return send(blob).catch(fail); },
+        function () { toast('Не получилось подготовить файл. Проверьте интернет и попробуйте ещё раз.'); }
+      );
+    });
+  }
+  $('btnPdf').addEventListener('click', function () { exportAs('pdf'); });
+  $('btnPng').addEventListener('click', function () { exportAs('png'); });
+
+  /* Телефон: кнопка «Отправить» через меню телефона (только вне Claude) */
+  var inClaude = !!(window.claude && window.claude.use), canShare = false;
+  try { canShare = !inClaude && !!navigator.canShare && navigator.canShare({ files: [new File(['x'], 'a.pdf', { type: 'application/pdf' })] }); } catch (e) {}
+  if (canShare) {
+    $('btnShare').hidden = false; $('btnPdf').classList.remove('primary');
+    $('btnShare').addEventListener('click', shareAct);
+  }
+  if (!inClaude) setTimeout(function () { Promise.all([loadScript(H2C), loadScript(JSPDF)]).catch(function () {}); }, 4000);
+  /* Клавиатура: прячем нижнюю панель, пока вводите текст */
+  document.addEventListener('focusin', function (e) { if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) document.body.classList.add('typing'); });
+  document.addEventListener('focusout', function () { document.body.classList.remove('typing'); });
+
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
+
+  /* Старт */
+  bindMeta(); bindControls(); initFold(); renderCats(); renderWorks(); renderItems();
+  $('banner').hidden = !state.sample;
+  document.body.dataset.view = 'form';
+  $('btnView').textContent = 'Показать акт';
+  refresh(); updateHistBtn();
+})();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) { window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); }); }
+</script>
+</body>
+</html>
