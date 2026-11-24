@@ -419,96 +419,71 @@ body[data-background="blue"] { --bg: #E1ECF8; }
   body[data-background="blue"] { --bg: #202D3B; }
 }
 .access-locked {
-  --welcome-gold: rgba(246, 167, 46, .46);
-  --welcome-edge: rgba(105, 67, 43, .79);
-  display: grid; place-items: center; min-height: 100vh; min-height: 100svh;
-  padding-block: clamp(16px, 4vh, 32px); overflow-x: clip;
-  background: #141316;
+  --welcome-gold: rgba(206, 135, 36, .40);
+  --welcome-edge: rgba(107, 68, 45, .66);
+  display: grid; place-items: center; min-height: 100vh; min-height: 100dvh;
+  padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+  overflow-x: clip; background: #111216; color: #fff4e0;
 }
 .access-locked[data-background="blue"] { --welcome-edge: rgba(57, 83, 130, .86); }
 .access-locked[data-background="sand"] { --welcome-edge: rgba(128, 78, 38, .86); }
-.access-locked::before, .access-locked::after {
-  content: ""; position: fixed; pointer-events: none;
-}
 .access-locked::before {
+  content: ""; position: fixed; pointer-events: none;
   inset: -16%;
   background:
-    radial-gradient(ellipse at 20% 14%, var(--welcome-gold), transparent 48%),
-    radial-gradient(ellipse at 90% 77%, var(--welcome-edge), transparent 54%),
-    radial-gradient(ellipse at 46% 98%, rgba(110, 61, 34, .72), transparent 53%),
-    linear-gradient(145deg, #15151B, #252021 63%, #16161B);
+    radial-gradient(ellipse at 16% 10%, var(--welcome-gold), transparent 49%),
+    radial-gradient(ellipse at 93% 94%, var(--welcome-edge), transparent 52%),
+    linear-gradient(155deg, #191820, #101116 60%, #1c191c);
   animation: ambient-drift 17s ease-in-out infinite;
 }
-.access-locked::after {
-  inset: -6%;
-  background-image:
-    repeating-linear-gradient(0deg, transparent 0 39px, rgba(255,221,150,.17) 39px 40px),
-    repeating-linear-gradient(90deg, transparent 0 39px, rgba(255,221,150,.17) 39px 40px);
-  -webkit-mask-image: radial-gradient(ellipse at 91% 18%, #000, transparent 58%);
-  mask-image: radial-gradient(ellipse at 91% 18%, #000, transparent 58%);
-  opacity: .45;
-  animation: ambient-grid 13s ease-in-out infinite;
+.welcome-scene {
+  display: none; position: fixed; inset: 0; width: 100%; height: 100%;
+  pointer-events: none;
 }
-.access-panel, .settings-panel {
-  width: min(100%, 420px); border-radius: 28px;
-  border: 1px solid var(--line); background: var(--surface); color: var(--fg);
-}
+.access-locked .welcome-scene { display: block; }
 .access-panel {
-  position: relative; z-index: 1; overflow: hidden;
-  border-color: rgba(255,255,255,.2);
-  box-shadow: 0 25px 65px rgba(0,0,0,.35);
+  position: relative; z-index: 1; width: min(100%, 392px);
   animation: welcome-in 560ms cubic-bezier(.17,.72,.28,1) both;
 }
 .access-hero {
-  position: relative; overflow: hidden; isolation: isolate;
-  display: grid; justify-items: center; gap: 12px; padding: 27px 18px 25px;
-  background:
-    radial-gradient(ellipse at 60% -15%, rgba(255,207,70,.42), transparent 68%),
-    linear-gradient(145deg, #1B1E21 12%, #2B2520 62%, #1B1E21);
-  color: var(--hero-fg);
-}
-.access-hero::after {
-  content: ""; position: absolute; inset: -65% -55%; z-index: -1; pointer-events: none;
-  background: linear-gradient(113deg, transparent 44%, rgba(255,219,116,.14) 49%, rgba(255,244,212,.27) 51%, transparent 57%);
-  transform: translateX(-45%); animation: welcome-light 7s ease-in-out infinite;
+  display: grid; justify-items: center; gap: 12px;
+  margin-bottom: clamp(24px, 4vh, 36px); text-align: center;
 }
 .access-emblem {
-  display: grid; place-items: center; width: 70px; height: 70px; border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.07);
-  box-shadow: 0 8px 26px rgba(0,0,0,.2);
+  display: grid; place-items: center; width: clamp(77px, 22vw, 100px); aspect-ratio: 1;
   animation: welcome-logo 6s ease-in-out infinite;
 }
-.access-emblem svg { width: 47px; height: 47px; }
+.access-emblem svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 22px rgba(240, 162, 0, .33)); }
 .access-hero h1 {
-  margin: 0; font: 800 clamp(30px, 8vw, 40px)/1.08 var(--display); letter-spacing: -.05em;
+  margin: 0; font: 800 clamp(46px, 12vw, 70px)/1 var(--display); letter-spacing: -.055em;
+  text-shadow: 0 4px 26px rgba(0,0,0,.55);
   animation: welcome-brand 820ms cubic-bezier(.17,.72,.28,1) both;
 }
-.access-panel form { display: grid; gap: 13px; padding: clamp(16px, 5vw, 24px); }
+.access-panel form { display: grid; gap: 13px; }
 .access-panel h2, .settings-panel h2 { margin: 0; font: 750 22px/1.15 var(--display); letter-spacing: -.025em; }
-.access-hint { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.access-hint { margin: 5px 0 0; color: #d4c9bb; font-size: 13px; }
+.access-panel .fld label { color: #f0e1d0; }
 .access-panel input {
   appearance: none; width: 100%; min-height: 48px; padding: 0 13px;
-  border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2);
-  font-size: 17px; letter-spacing: .22em;
+  border: 1px solid #755f48; border-radius: 14px; background: rgba(25, 23, 27, .88);
+  font-size: 17px; letter-spacing: .22em; color: #fff4e0;
 }
+.access-panel :focus-visible { outline-color: #f4b400; }
+.access-panel .access-error { color: #ffad9f; }
 .access-panel .btn, .settings-panel .btn { min-height: 44px; }
-.access-panel .btn.primary { min-height: 48px; margin-top: 1px; font-weight: 750; }
+.access-panel .btn.primary {
+  min-height: 48px; margin-top: 1px; font-weight: 750;
+  border-color: #ffc95a; color: #211707;
+  background: linear-gradient(112deg, #ffd060, #f2ad20 80%);
+  box-shadow: 0 8px 25px rgba(235, 153, 24, .22);
+}
 @keyframes welcome-in {
   from { opacity: 0; transform: translateY(10px) scale(.985); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
-@keyframes welcome-light {
-  0% { transform: translateX(-45%); opacity: .15; }
-  37% { opacity: .85; }
-  72%, 100% { transform: translateX(44%); opacity: 0; }
-}
 @keyframes ambient-drift {
   0%, 100% { transform: translate(-4%, -2%) scale(1); }
   50% { transform: translate(6%, 4%) scale(1.09); }
-}
-@keyframes ambient-grid {
-  0%, 100% { transform: translate(0, 0); opacity: .42; }
-  50% { transform: translate(-12px, 8px); opacity: .63; }
 }
 @keyframes welcome-logo {
   0%, 100% { transform: translateY(0); }
@@ -518,7 +493,15 @@ body[data-background="blue"] { --bg: #E1ECF8; }
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.settings-panel { width: min(calc(100% - 32px), 420px); max-height: calc(100% - 32px); padding: clamp(16px, 5vw, 24px); }
+@media (max-height: 540px) {
+  .access-emblem { width: 64px; }
+  .access-hero { gap: 6px; margin-bottom: 16px; }
+  .access-hero h1 { font-size: 42px; }
+}
+.settings-panel {
+  width: min(calc(100% - 32px), 420px); max-height: calc(100% - 32px); padding: clamp(16px, 5vw, 24px);
+  border-radius: 28px; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+}
 .settings-panel::backdrop { background: rgba(0, 0, 0, .55); }
 .settings-panel fieldset { margin: 16px 0; padding: 0; border: 0; }
 .settings-panel legend { font-weight: 600; margin-bottom: 6px; }
@@ -536,8 +519,7 @@ body[data-background="blue"] { --bg: #E1ECF8; }
   background: radial-gradient(circle at 32px center, #fff 0 8px, transparent 8.7px), #876200;
 }
 body[data-motion="off"] .topbar::after,
-body[data-motion="off"].access-locked::before, body[data-motion="off"].access-locked::after,
-body[data-motion="off"] .access-panel, body[data-motion="off"] .access-hero::after,
+body[data-motion="off"].access-locked::before, body[data-motion="off"] .access-panel,
 body[data-motion="off"] .access-emblem, body[data-motion="off"] .access-hero h1 { animation: none; }
 body[data-motion="off"] button { transition: none; }
 body[data-motion="off"] button:not(:disabled):active { transform: none; }
@@ -545,12 +527,13 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
 .access-error, .settings-status { margin: 0; color: var(--danger); }
 .access-error:empty, .settings-status:empty { display: none; }
 @media (prefers-reduced-motion: reduce) {
-  .access-locked::before, .access-locked::after,
-  .access-panel, .access-hero::after, .access-emblem, .access-hero h1 { animation: none; }
+  .access-locked::before, .access-panel, .access-emblem, .access-hero h1 { animation: none; }
 }
 </style>
+<script src="welcome.js" defer></script>
 </head>
 <body class="access-locked">
+<canvas id="welcomeScene" class="welcome-scene" aria-hidden="true"></canvas>
 <svg class="brand-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
   <symbol id="brand-mark" viewBox="0 0 40 40">
     <rect x="1" y="1" width="38" height="38" rx="6" fill="#F4B400"/>
