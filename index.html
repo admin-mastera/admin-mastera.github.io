@@ -66,7 +66,7 @@ body {
   font: 15px/1.5 var(--body);
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 0 96px;
+  padding-block: 0 calc(136px + env(safe-area-inset-bottom, 0px));
 }
 button, input, select, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
@@ -88,6 +88,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
   -webkit-mask-image: linear-gradient(225deg, #000, transparent 75%);
   mask-image: linear-gradient(225deg, #000, transparent 75%);
   opacity: .55;
+  animation: header-grid 9s ease-in-out infinite;
+}
+@keyframes header-grid {
+  0%, 100% { opacity: .42; transform: translate(0, 0); }
+  50% { opacity: .72; transform: translate(-10px, 5px); }
 }
 .brand, .top-actions { position: relative; z-index: 1; }
 .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
@@ -216,7 +221,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
 .sheet { padding: 22px clamp(14px, 4vw, 38px) 30px; display: grid; gap: 16px; }
 .p-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; border-bottom: 2px solid var(--paper-fg); padding-bottom: 10px; }
 .p-head h3 { margin: 0; font: 700 24px/1.15 var(--doc); letter-spacing: .03em; text-transform: uppercase; }
-.p-head .no { text-align: right; color: var(--paper-muted); font-size: 13px; }
+.p-head .no { display: grid; gap: 2px; text-align: right; color: var(--paper-muted); font-size: 13px; }
 .p-head .no strong { color: var(--paper-fg); font-size: 15px; }
 .p-theme { margin: 0; font-size: 15px; }
 .p-theme span, .parties dt, .th-note { color: var(--paper-muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
@@ -224,11 +229,14 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
 .parties { margin: 0; display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 6px 12px; align-items: baseline; }
 .parties dd { margin: 0; overflow-wrap: anywhere; }
 .blank { display: inline-block; min-width: 140px; height: 1.1em; border-bottom: 1px solid var(--paper-muted); vertical-align: bottom; }
-.tbl-wrap { overflow-x: auto; }
-.paper table { width: 100%; min-width: 440px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.tbl-wrap { min-width: 0; overflow-x: auto; }
+.paper table { width: 100%; min-width: 460px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .paper th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--paper-muted); border-bottom: 2px solid var(--paper-fg); padding: 6px 6px; font-weight: 600; }
 .paper td { padding: 8px 6px; border-bottom: 1px solid var(--paper-line); vertical-align: top; }
 .paper .r { text-align: right; white-space: nowrap; }
+.paper .work-name { width: 100%; overflow-wrap: anywhere; }
+.paper .unit-cell { text-align: center; white-space: nowrap; }
+.paper .currency { display: block; font-size: .85em; text-transform: none; letter-spacing: 0; }
 .paper td.n { width: 28px; color: var(--paper-muted); }
 .paper td.empty-row { text-align: center; color: var(--paper-muted); padding: 22px 6px; }
 .totals { margin-left: auto; width: min(100%, 340px); display: grid; gap: 4px; font-variant-numeric: tabular-nums; }
@@ -243,19 +251,27 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
 .sign .cap { font-size: 11px; color: var(--paper-muted); margin-top: 3px; }
 .sign .nm { margin-top: 6px; min-height: 1.4em; overflow-wrap: anywhere; }
 
-/* Нижняя панель на телефоне */
+/* Навигация на телефоне */
 .bar {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
-  background: var(--surface); border-top: 1px solid var(--line);
-  padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  position: fixed; left: 50%; bottom: max(10px, env(safe-area-inset-bottom, 0px)); z-index: 20;
+  transform: translateX(-50%); width: min(480px, calc(100% - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  padding: 6px; border: 1px solid var(--line); border-radius: 24px;
+  background: var(--surface); box-shadow: 0 8px 28px rgba(0, 0, 0, .23);
 }
-.bar .lbl { font-size: 12px; color: var(--muted); line-height: 1.2; }
-.bar .val { font: 600 20px/1.15 var(--display); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
-.bar .btn { min-height: 46px; }
+.bar-total { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 4px 10px 7px; border-bottom: 1px solid var(--line); }
+.bar-total .lbl { font-size: 12px; color: var(--muted); }
+.bar-total .val { font: 700 16px/1.3 var(--display); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; text-align: right; }
+.bar nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; margin-top: 4px; }
+.nav-btn {
+  display: grid; justify-items: center; align-content: center; gap: 3px; min-height: 54px;
+  padding: 3px 1px; border: 0; border-radius: 17px; background: transparent;
+  color: var(--muted); cursor: pointer; font-size: 11px; font-weight: 600;
+}
+.nav-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.nav-btn[aria-current="page"], .nav-btn[aria-expanded="true"] { background: var(--accent); color: var(--on-accent); }
 
 .toast {
-  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 30;
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(118px + env(safe-area-inset-bottom, 0px)); z-index: 30;
   background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 14px; max-width: calc(100vw - 32px);
 }
 .toast[hidden] { display: none; }
@@ -269,8 +285,11 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
 .chk input { width: 22px; height: 22px; flex: none; accent-color: var(--accent-ink); }
 .okopts { display: grid; gap: 2px; margin-top: 4px; }
 .okopts[hidden] { display: none; }
-.capture { position: fixed; left: -10000px; top: 0; width: 640px; z-index: -1; pointer-events: none; }
+.capture { position: fixed; left: -10000px; top: 0; z-index: -1; pointer-events: none; }
 .capture .paper { box-shadow: none; border-radius: 0; }
+.capture .sheet { padding: 14px 16px; gap: 12px; }
+.capture .paper td { padding: 6px; }
+.capture .signs { padding-top: 8px; }
 .okrow { display: flex; align-items: center; gap: 10px; min-height: 34px; }
 .box { flex: none; width: 20px; height: 20px; border: 1.5px solid var(--paper-fg); border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; }
 .box.on { background: var(--paper-fg); color: #fff; }
@@ -341,7 +360,7 @@ select { -webkit-appearance: none; appearance: none; background-image: url("data
 .h-info span { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
 .h-sum { grid-column: 1 / -1; font: 700 18px/1.2 var(--display); font-variant-numeric: tabular-nums; }
 .h-act { display: flex; flex-wrap: wrap; gap: 8px; }
-body[data-view="history"] .layout, body[data-view="history"] .banner, body[data-view="history"] .bar { display: none; }
+body[data-view="history"] .layout, body[data-view="history"] .banner, body[data-view="history"] .bar-total { display: none; }
 body:not([data-view="history"]) .history { display: none; }
 @media (max-width: 480px) {
   .topbar { padding: 16px; }
@@ -354,6 +373,8 @@ body:not([data-view="history"]) .history { display: none; }
 @media (max-width: 979px) {
   body[data-view="form"] .pane-preview { display: none; }
   body[data-view="preview"] .pane-form { display: none; }
+  body[data-view="preview"] .banner, body[data-view="preview"] .top-actions, body[data-view="preview"] .brand small { display: none; }
+  .desktop-action { display: none; }
 }
 @media (min-width: 980px) {
   body { padding-block: 0 32px; }
@@ -363,11 +384,20 @@ body:not([data-view="history"]) .history { display: none; }
   .toast { bottom: 24px; }
 }
 @media (max-width: 480px) {
-  .signs { gap: 14px; }
-  .parties { grid-template-columns: 86px minmax(0, 1fr); }
-  .p-head h3 { font-size: 22px; }
+  .pane-preview .signs { gap: 14px; }
+  .pane-preview .parties { grid-template-columns: max-content minmax(0, 1fr); gap: 6px 8px; }
+  .pane-preview .p-head h3 { font-size: 22px; }
+  .pane-preview .p-head .no { display: flex; width: 100%; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; text-align: left; }
+  .pane-preview .paper table { min-width: 0; font-size: 11.5px; line-height: 1.35; }
+  .pane-preview .paper th { font-size: 9.5px; letter-spacing: 0; }
+  .pane-preview .paper th, .pane-preview .paper td { padding: 5px 3px; }
+  .pane-preview .paper td.n { width: auto; }
+  .pane-preview .paper .note { font-size: 10.5px; }
 }
-@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; transition: none !important; }
+  .topbar::after { animation: none; }
+}
 
 body[data-background="sand"] { --bg: #F3E8D3; }
 body[data-background="blue"] { --bg: #E1ECF8; }
@@ -434,9 +464,9 @@ body[data-background="blue"] { --bg: #E1ECF8; }
       </div>
     </div>
     <div class="top-actions">
-      <button type="button" class="btn" id="btnHistory">История</button>
+      <button type="button" class="btn desktop-action" id="btnHistory">Архив</button>
       <button type="button" class="btn" id="btnNew">Новый акт</button>
-      <button type="button" class="btn" id="btnSettings">Настройки</button>
+      <button type="button" class="btn desktop-action" id="btnSettings" aria-haspopup="dialog">Настройки</button>
     </div>
   </header>
 
@@ -553,14 +583,16 @@ body[data-background="blue"] { --bg: #E1ECF8; }
 
     <section class="pane pane-preview" aria-label="Готовый акт">
       <div class="pv-tools">
+        <p class="hint" id="samplePreview" hidden>Пример акта</p>
         <div class="tpl"><span class="lbl">Шаблон акта</span><div class="chips" id="tplChips" role="group" aria-label="Шаблон акта"></div></div>
         <div class="pv-btns">
-          <button type="button" class="btn primary" id="btnShare" hidden>Отправить</button>
+          <button type="button" class="btn primary" id="btnShare" hidden>Подготовить PDF</button>
           <button type="button" class="btn primary" id="btnPdf">Скачать PDF</button>
           <button type="button" class="btn" id="btnPng">Скачать картинку</button>
           <button type="button" class="btn" id="btnCopy">Копировать текст</button>
         </div>
-        <p class="hint">Скачайте файл и отправьте его заказчику в мессенджере или на почту. Акт обновляется, пока вы вводите данные.</p>
+        <p class="hint" id="pdfStatus" role="status" hidden></p>
+        <p class="hint">Для отправки из мессенджера прикрепите скачанный PDF как документ.</p>
       </div>
       <textarea class="copy-fallback" id="copyFallback" readonly hidden aria-label="Текст акта для копирования"></textarea>
       <article class="paper" id="paper"></article>
@@ -569,8 +601,25 @@ body[data-background="blue"] { --bg: #E1ECF8; }
 </div>
 
 <div class="bar" id="bar" hidden>
-  <div><div class="lbl">К оплате</div><div class="val" id="barVal">0</div></div>
-  <button type="button" class="btn primary" id="btnView">Показать акт</button>
+  <div class="bar-total"><span class="lbl">К оплате</span><strong class="val" id="barVal">0</strong></div>
+  <nav aria-label="Разделы приложения">
+    <button class="nav-btn" type="button" id="navHome" data-nav="form" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v11h5v-6h4v6h5V9"/></svg>
+      Главная
+    </button>
+    <button class="nav-btn" type="button" id="btnView" data-nav="preview">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6m-6 4h6"/></svg>
+      Акт
+    </button>
+    <button class="nav-btn" type="button" id="navArchive" data-nav="history">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v5H3zM5 9v11h14V9m-9 4h4"/></svg>
+      Архив
+    </button>
+    <button class="nav-btn" type="button" id="navSettings" aria-haspopup="dialog" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h5m4 0h7M4 12h10m4 0h2M4 18h3m4 0h9"/><circle cx="11" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg>
+      Настройки
+    </button>
+  </nav>
 </div>
 <div class="toast" id="toast" hidden></div>
 <dialog id="settingsPanel" class="settings-panel" aria-labelledby="settingsTitle">
@@ -607,10 +656,11 @@ body[data-background="blue"] { --bg: #E1ECF8; }
 
   /* Единицы измерения простыми словами */
   var WHOLE = 'за всю работу';
-  var U_CUSTOM = ['м²', 'пог. м', 'шт.', 'точка', 'отверстие', 'час', 'рейс', WHOLE];
+  var U_CUSTOM = ['м²', 'пог. м', 'м', 'шт.', 'точка', 'отверстие', 'час', 'рейс', WHOLE];
   var UL = {
     'м²': ['Площадь, м²', 'Цена за м²'],
     'пог. м': ['Длина, пог. м', 'Цена за пог. м'],
+    'м': ['Длина, м', 'Цена за метр'],
     'шт.': ['Количество, шт.', 'Цена за штуку'],
     'точка': ['Количество, точек', 'Цена за точку'],
     'отверстие': ['Количество отверстий', 'Цена за отверстие'],
@@ -618,12 +668,13 @@ body[data-background="blue"] { --bg: #E1ECF8; }
     'рейс': ['Количество рейсов', 'Цена за рейс']
   };
   var UFULL = {
-    'м²': 'Квадратные метры (м²)', 'пог. м': 'Погонные метры (пог. м)', 'шт.': 'Штуки (шт.)',
+    'м²': 'Квадратные метры (м²)', 'пог. м': 'Погонные метры (пог. м)', 'м': 'Метры (м)', 'шт.': 'Штуки (шт.)',
     'точка': 'Точки', 'отверстие': 'Отверстия', 'час': 'Часы', 'рейс': 'Рейсы'
   };
   var UHELP = {
     'м²': 'Квадратный метр: площадь, то есть длина × ширина. Так считают пол, стены, потолок.',
     'пог. м': 'Погонный метр: длина по прямой линии. Так считают запил под 45°, плинтус, швы, кабель.',
+    'м': 'Метр: длина. Выберите эту единицу, если в смете или договоре длина указана в метрах.',
     'шт.': 'Штуки: каждая вещь отдельно, например розетка, унитаз или поддон.',
     'точка': 'Точка: одно место подключения воды, канализации или электричества.',
     'отверстие': 'Отверстие: каждое просверлённое отверстие в плитке или стене.',
@@ -748,7 +799,7 @@ body[data-background="blue"] { --bg: #E1ECF8; }
     if (!iso) return '';
     var p = iso.split('-').map(Number);
     if (p.length < 3 || !p[0]) return '';
-    return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }) + ' г.';
+    return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).replace(/\s*г\.?$/, '') + ' г.';
   }
   function copyOf(x) { return JSON.parse(JSON.stringify(x)); }
 
@@ -799,7 +850,7 @@ body[data-background="blue"] { --bg: #E1ECF8; }
   function cur() { return CUR.rub; }
   function round(x) { return Math.round(x * 100) / 100; }
   function money(x) { return round(x).toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
-  function qtyFmt(v) { return num(v).toLocaleString('ru-RU', { maximumFractionDigits: 2 }); }
+  function qtyFmt(v) { return num(v).toLocaleString('ru-RU', { maximumFractionDigits: 8 }); }
   function qtyOf(it) { return it.unit === WHOLE ? 1 : num(it.qty); }
   function lineSum(it) { return qtyOf(it) * num(it.price); }
   function volText(it) {
@@ -902,7 +953,7 @@ body[data-background="blue"] { --bg: #E1ECF8; }
   function flush() { clearTimeout(saveTimer); persist(); }
   function updateHistBtn() {
     var n = loadHist().length;
-    $('btnHistory').textContent = n ? 'История (' + n + ')' : 'История';
+    $('btnHistory').textContent = n ? 'Архив (' + n + ')' : 'Архив';
   }
 
   /* Форма */
@@ -1000,6 +1051,7 @@ body[data-background="blue"] { --bg: #E1ECF8; }
     state.items.forEach(function (it) {
       var units = (it.units && it.units.length ? it.units : U_CUSTOM).slice();
       if (units.indexOf(it.unit) === -1) units.unshift(it.unit);
+      if (units.indexOf('пог. м') !== -1 && units.indexOf('м') === -1) units.splice(units.indexOf('пог. м') + 1, 0, 'м');
       var hints = (it.hints || []).slice(0, 8);
       var row = document.createElement('div'); row.className = 'item';
       row.innerHTML =
@@ -1007,7 +1059,7 @@ body[data-background="blue"] { --bg: #E1ECF8; }
         '<input type="text" id="n-' + it.id + '" class="in-name" autocapitalize="sentences" autocomplete="off" placeholder="Название работы">' +
         '<button type="button" class="del" aria-label="Удалить работу">×</button></div>' +
         '<div class="item-nums" id="nums-' + it.id + '">' +
-        '<div class="fld unit"><label for="u-' + it.id + '">Как считаем</label><select id="u-' + it.id + '" class="in-unit">' +
+        '<div class="fld unit"><label for="u-' + it.id + '">Единица измерения</label><select id="u-' + it.id + '" class="in-unit">' +
         units.map(function (u) { return '<option value="' + esc(u) + '"' + (u === it.unit ? ' selected' : '') + '>' + esc(unitFull(u)) + '</option>'; }).join('') + '</select></div>' +
         '<div class="fld" id="fq-' + it.id + '"><label id="lq-' + it.id + '" for="q-' + it.id + '"></label><input type="text" id="q-' + it.id + '" class="in-qty" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0"></div>' +
         '<div class="fld price"><label id="lp-' + it.id + '" for="p-' + it.id + '"></label><input type="text" id="p-' + it.id + '" class="in-price" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0"></div>' +
@@ -1088,18 +1140,20 @@ body[data-background="blue"] { --bg: #E1ECF8; }
   }
   function renderPaper() {
     var m = state.meta, c = calc(), l = cur().label, rows = '';
+    $('samplePreview').hidden = !state.sample;
     if (!state.items.length) {
-      rows = '<tr><td class="empty-row" colspan="5">Работы пока не добавлены</td></tr>';
+      rows = '<tr><td class="empty-row" colspan="6">Работы пока не добавлены</td></tr>';
     } else {
       state.items.forEach(function (it, i) {
         var d = detailText(it);
-        rows += '<tr><td class="n">' + (i + 1) + '</td><td>' + (it.name ? esc(it.name) : '<span class="blank" style="min-width:90px"></span>') + (d ? '<div class="note">' + esc(d) + '</div>' : '') + '</td>' +
-          '<td class="r">' + esc(volText(it)) + '</td>' +
-          '<td class="r">' + (it.unit !== WHOLE && num(it.price) ? money(num(it.price)) : '—') + '</td>' +
+        rows += '<tr><td class="n">' + (i + 1) + '</td><td class="work-name">' + (it.name ? esc(it.name) : '—') + (d ? '<div class="note">' + esc(d) + '</div>' : '') + '</td>' +
+          '<td class="unit-cell" title="' + esc(unitFull(it.unit)) + '">' + (it.unit === WHOLE ? 'работа' : esc(it.unit)) + '</td>' +
+          '<td class="r">' + (qtyOf(it) ? qtyFmt(qtyOf(it)) : '—') + '</td>' +
+          '<td class="r">' + (num(it.price) ? money(num(it.price)) : '—') + '</td>' +
           '<td class="r"><strong>' + money(lineSum(it)) + '</strong></td></tr>';
       });
     }
-    function frow(label, val, cls) { return '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td colspan="4" class="lbl">' + label + '</td><td class="r">' + val + '</td></tr>'; }
+    function frow(label, val, cls) { return '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td colspan="5" class="lbl">' + label + '</td><td class="r">' + val + '</td></tr>'; }
     var foot = frow('Итого', money(c.total) + ' ' + l);
     if (c.discount) foot += frow('Скидка', '− ' + money(c.discount) + ' ' + l);
     if (c.advance) foot += frow('Аванс получен', '− ' + money(c.advance) + ' ' + l);
@@ -1110,19 +1164,21 @@ body[data-background="blue"] { --bg: #E1ECF8; }
     $('paper').className = 'paper paper--' + (m.template === 'compact' ? 'compact' : 'business');
     $('paper').innerHTML =
       '<div class="sheet">' +
-      '<div class="p-head"><h3>' + esc(textOr(m.docTitle, DEF.title)) + '</h3><div class="no">№ <strong>' + (m.number ? esc(m.number) : '___') + '</strong><br>' + (m.city ? 'г. ' + esc(m.city) + ', ' : 'от ') + (fmtDate(m.date) || '___') + '</div></div>' +
+      '<div class="p-head"><h3>' + esc(textOr(m.docTitle, DEF.title)) + '</h3><div class="no"><span>№ <strong>' + (m.number ? esc(m.number) : '___') + '</strong></span><span>' + (m.city ? 'г. ' + esc(m.city) + ', ' : 'от ') + (fmtDate(m.date) || '___') + '</span></div></div>' +
       '<p class="p-theme"><span>Тема работ</span><strong>' + (m.title ? esc(m.title) : '<span class="blank" style="min-width:200px"></span>') + '</strong></p>' +
       '<dl class="parties">' +
       '<dt>Объект</dt><dd>' + blank(m.address) + '</dd>' +
       '<dt>Заказчик</dt><dd>' + blank(m.client) + (m.clientPhone ? ', тел. ' + esc(m.clientPhone) : '') + '</dd>' +
       '<dt>Исполнитель</dt><dd>' + blank(m.worker) + (m.workerPhone ? ', тел. ' + esc(m.workerPhone) : '') + '</dd></dl>' +
       '<p class="statement">' + esc(textOr(m.intro, DEF.intro)) + '</p>' +
-      '<div class="tbl-wrap"><table><thead><tr><th class="c">№</th><th>Наименование работ</th><th class="r">Объём</th><th class="r">Цена, ' + esc(l) + '</th><th class="r">Сумма, ' + esc(l) + '</th></tr></thead><tbody>' + rows + '</tbody><tfoot>' + foot + '</tfoot></table></div>' +
+      '<div class="tbl-wrap"><table><thead><tr><th scope="col" class="c">№</th><th scope="col">Наименование работ</th><th scope="col" class="unit-cell">Ед.</th><th scope="col" class="r">Кол-во</th><th scope="col" class="r">Цена<span class="currency">' + esc(l) + ' / ед.</span></th><th scope="col" class="r">Сумма<span class="currency">' + esc(l) + '</span></th></tr></thead><tbody>' + rows + '</tbody><tfoot>' + foot + '</tfoot></table></div>' +
       (words ? '<p class="words"><span>К оплате прописью:</span> ' + esc(words) + '</p>' : '') +
       '<p class="statement">' + esc(textOr(m.closing, DEF.closing)) + '</p>' +
       wt + notes +
       signHtml(m) +
       '</div>';
+    setPdfStatus('');
+    syncShareButton();
   }
 
   function actText() {
@@ -1218,7 +1274,10 @@ body[data-background="blue"] { --bg: #E1ECF8; }
   function setView(v) {
     if (v !== 'history') lastView = v;
     document.body.dataset.view = v;
-    $('btnView').textContent = v === 'preview' ? '← К данным' : 'Показать акт';
+    $('bar').querySelectorAll('[data-nav]').forEach(function (button) {
+      if (button.dataset.nav === v) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
+    });
     if (v === 'history') { flush(); renderHistory(); }
     window.scrollTo(0, 0);
   }
@@ -1306,6 +1365,8 @@ body[data-background="blue"] { --bg: #E1ECF8; }
   $('btnCustom').addEventListener('click', function () { addItem({ name: '', unit: 'шт.', units: U_CUSTOM, hints: [] }, 'other'); });
   $('btnNew').addEventListener('click', newAct);
   $('btnHistory').addEventListener('click', function () { setView('history'); });
+  $('navArchive').addEventListener('click', function () { setView('history'); });
+  $('navHome').addEventListener('click', function () { setView('form'); });
   $('btnBack').addEventListener('click', function () { setView(lastView || 'form'); });
   $('btnHide').addEventListener('click', function () { $('banner').hidden = true; });
   $('workSearch').addEventListener('input', renderWorks);
@@ -1319,7 +1380,7 @@ body[data-background="blue"] { --bg: #E1ECF8; }
       navigator.clipboard.writeText(text).then(function () { $('copyFallback').hidden = true; toast('Текст акта скопирован'); }, fallback);
     } catch (e) { fallback(); }
   });
-  $('btnView').addEventListener('click', function () { setView(document.body.dataset.view === 'preview' ? 'form' : 'preview'); });
+  $('btnView').addEventListener('click', function () { setView('preview'); });
   /* Скачать акт: PDF или картинка */
   var H2C = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
   var JSPDF = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
@@ -1334,27 +1395,37 @@ body[data-background="blue"] { --bg: #E1ECF8; }
     }
     return scripts[src];
   }
-  var CAP_W = 640;
-  function captureCanvas() {
+  var CAP_W = 680;
+  function captureCanvas(snapshot) {
     var wrap = document.createElement('div'); wrap.className = 'capture';
-    var el = document.createElement('article'); el.className = $('paper').className; el.innerHTML = $('paper').innerHTML;
+    wrap.style.width = CAP_W + 'px';
+    var el = document.createElement('article');
+    el.className = snapshot.className;
+    el.innerHTML = snapshot.html;
     wrap.appendChild(el); document.body.appendChild(wrap);
     var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
     return fonts.then(function () {
       var h = el.offsetHeight, top = el.getBoundingClientRect().top, cuts = [];
       el.querySelectorAll('tbody tr, tfoot tr, .sheet > *').forEach(function (n) { cuts.push(Math.round(n.getBoundingClientRect().top - top)); });
       cuts.sort(function (a, b) { return a - b; });
-      var scale = Math.max(2, Math.min(4, Math.sqrt(14000000 / (CAP_W * h))));
+      var scale = Math.min(3, 8192 / h, Math.sqrt(14000000 / (CAP_W * h)));
       return window.html2canvas(el, { scale: scale, backgroundColor: '#ffffff', logging: false, windowWidth: CAP_W }).then(function (canvas) {
         wrap.remove();
-        return { canvas: canvas, scale: canvas.width / CAP_W, cuts: cuts, height: h };
+        return { canvas: canvas, scale: canvas.height / h, cuts: cuts, height: h };
       });
     }).catch(function (e) { wrap.remove(); throw e; });
   }
   function pdfBlob(cap) {
-    var pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+    var pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', compress: true });
     var margin = 10, cw = 210 - margin * 2, ch = 297 - margin * 2;
-    var mmPerPx = cw / CAP_W, pageH = ch / mmPerPx, y = 0, first = true, canvas = cap.canvas;
+    var mmPerPx = cw / CAP_W, canvas = cap.canvas;
+    var fit = Math.min(mmPerPx, ch / cap.height);
+    if (fit >= mmPerPx * .87) {
+      var width = CAP_W * fit;
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', (210 - width) / 2, margin, width, cap.height * fit, undefined, 'FAST');
+      return pdf.output('blob');
+    }
+    var pageH = ch / mmPerPx, y = 0, first = true;
     while (y < cap.height - 1) {
       var end = y + pageH;
       if (end < cap.height) {
@@ -1362,7 +1433,7 @@ body[data-background="blue"] { --bg: #E1ECF8; }
         cap.cuts.forEach(function (c) { if (c > y + 40 && c <= end && c > best) best = c; });
         end = best || end;
       } else { end = cap.height; }
-      var sy = Math.round(y * cap.scale), sh = Math.max(1, Math.min(Math.round((end - y) * cap.scale), canvas.height - sy));
+      var sy = Math.round(y * cap.scale), sh = Math.max(1, Math.round(end * cap.scale) - sy);
       var c = document.createElement('canvas'); c.width = canvas.width; c.height = sh;
       var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, sh);
       ctx.drawImage(canvas, 0, sy, canvas.width, sh, 0, 0, canvas.width, sh);
@@ -1386,34 +1457,53 @@ body[data-background="blue"] { --bg: #E1ECF8; }
     return new Promise(function (res) {
       var url = URL.createObjectURL(blob), a = document.createElement('a');
       a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
       res();
     });
   }
-  var busy = false, cache = { key: '', blob: null };
+  var busy = false, files = {};
   function exportKey(kind) { return kind + '|' + JSON.stringify([state.meta, state.items]); }
   function pngBlob(cap) {
     return new Promise(function (res, rej) { cap.canvas.toBlob(function (b) { if (b) res(b); else rej(new Error('png')); }, 'image/png'); });
   }
-  function getBlob(kind) {
+  function getFile(kind) {
     var key = exportKey(kind);
-    if (cache.key === key && cache.blob) return Promise.resolve(cache.blob);
+    if (files[kind] && files[kind].key === key) return Promise.resolve(files[kind].file);
+    var paper = $('paper'), snapshot = { className: paper.className, html: paper.innerHTML };
+    var name = fileBase() + (kind === 'pdf' ? '.pdf' : '.png');
     return Promise.all((kind === 'pdf' ? [H2C, JSPDF] : [H2C]).map(loadScript))
-      .then(captureCanvas)
+      .then(function () { return captureCanvas(snapshot); })
       .then(function (cap) { return kind === 'pdf' ? pdfBlob(cap) : pngBlob(cap); })
-      .then(function (blob) { cache = { key: key, blob: blob }; return blob; });
+      .then(function (blob) {
+        var file = new File([blob], name, { type: blob.type });
+        files[kind] = { key: key, file: file };
+        return file;
+      });
+  }
+  function readyPdf() {
+    return files.pdf && files.pdf.key === exportKey('pdf') ? files.pdf.file : null;
+  }
+  function syncShareButton() {
+    if (!busy) $('btnShare').textContent = readyPdf() ? 'Отправить PDF' : 'Подготовить PDF';
+  }
+  function setPdfStatus(message) {
+    var status = $('pdfStatus');
+    status.textContent = message;
+    status.hidden = !message;
   }
   function withBusy(btn, fn) {
     if (busy) return;
     busy = true;
     var label = btn.textContent; btn.disabled = true; btn.textContent = 'Готовлю файл…';
-    fn().then(null, function () {}).then(function () { busy = false; btn.disabled = false; btn.textContent = label; });
+    fn().then(null, function () {}).then(function () {
+      busy = false; btn.disabled = false; btn.textContent = label; syncShareButton();
+    });
   }
   function exportAs(kind) {
     withBusy(kind === 'pdf' ? $('btnPdf') : $('btnPng'), function () {
-      return getBlob(kind)
-        .then(function (blob) { return saveFile(fileBase() + (kind === 'pdf' ? '.pdf' : '.png'), blob); })
-        .then(function () { toast('Файл сохранён. Отправьте его заказчику в мессенджере или на почту.'); })
+      return getFile(kind)
+        .then(function (file) { return saveFile(file.name, file); })
+        .then(function () { toast('Файл подготовлен. Прикрепите его в мессенджере или на почте.'); })
         .catch(function (e) {
           var code = e && e.code;
           if (code === 'declined') toast('Сохранение отменено');
@@ -1422,39 +1512,49 @@ body[data-background="blue"] { --bg: #E1ECF8; }
         });
     });
   }
-  function shareAct() {
-    var key = exportKey('pdf');
-    function send(blob) {
-      var name = fileBase() + '.pdf';
-      return navigator.share({ files: [new File([blob], name, { type: 'application/pdf' })], title: name });
+  async function shareAct() {
+    var button = $('btnShare');
+    if (busy || button.disabled) return;
+    var file = readyPdf();
+    if (!file) {
+      withBusy(button, function () {
+        return getFile('pdf').then(function () {
+          if (readyPdf()) setPdfStatus('PDF готов. Нажмите «Отправить PDF».');
+        }).catch(function () {
+          setPdfStatus('Не удалось подготовить PDF. Проверьте подключение и попробуйте снова.');
+        });
+      });
+      return;
     }
-    function fail(e) {
-      var n = e && e.name;
-      if (n === 'AbortError') return;
-      if (n === 'NotAllowedError') toast('Файл готов. Нажмите «Отправить» ещё раз.');
-      else toast('Не получилось отправить. Нажмите «Скачать PDF» и отправьте файл из загрузок.');
+    button.disabled = true;
+    try {
+      var payload = { files: [file] };
+      if (!navigator.canShare(payload)) throw new Error('sharing unavailable');
+      await navigator.share(payload);
+      setPdfStatus('');
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        setPdfStatus('Нажмите «Скачать PDF» и прикрепите файл в мессенджере как документ.');
+      }
+    } finally {
+      button.disabled = false;
     }
-    if (cache.key === key && cache.blob) { send(cache.blob).catch(fail); return; }
-    withBusy($('btnShare'), function () {
-      return getBlob('pdf').then(
-        function (blob) { return send(blob).catch(fail); },
-        function () { toast('Не получилось подготовить файл. Проверьте интернет и попробуйте ещё раз.'); }
-      );
-    });
   }
   $('btnPdf').addEventListener('click', function () { exportAs('pdf'); });
   $('btnPng').addEventListener('click', function () { exportAs('png'); });
 
   /* Телефон: кнопка «Отправить» через меню телефона (только вне Claude) */
   var inClaude = !!(window.claude && window.claude.use), canShare = false;
-  try { canShare = !inClaude && !!navigator.canShare && navigator.canShare({ files: [new File(['x'], 'a.pdf', { type: 'application/pdf' })] }); } catch (e) {}
+  try { canShare = !inClaude && !!navigator.share && !!navigator.canShare && navigator.canShare({ files: [new File(['x'], 'a.pdf', { type: 'application/pdf' })] }); } catch (e) {}
   if (canShare) {
     $('btnShare').hidden = false; $('btnPdf').classList.remove('primary');
     $('btnShare').addEventListener('click', shareAct);
   }
   if (!inClaude) setTimeout(function () { Promise.all([loadScript(H2C), loadScript(JSPDF)]).catch(function () {}); }, 4000);
   /* Клавиатура: прячем нижнюю панель, пока вводите текст */
-  document.addEventListener('focusin', function (e) { if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) document.body.classList.add('typing'); });
+  document.addEventListener('focusin', function (e) {
+    if (e.target.matches('input:not([type=radio]):not([type=checkbox]), textarea, select')) document.body.classList.add('typing');
+  });
   document.addEventListener('focusout', function () { document.body.classList.remove('typing'); });
 
   /* Код и оформление хранятся в этом браузере. */
@@ -1567,7 +1667,13 @@ body[data-background="blue"] { --bg: #E1ECF8; }
   });
   try { setBackground(localStorage.getItem(backgroundKey)); } catch (error) { setBackground('standard'); }
 
-  $('btnSettings').addEventListener('click', function () { settings.showModal(); });
+  function openSettings() {
+    settings.showModal();
+    $('navSettings').setAttribute('aria-expanded', 'true');
+  }
+  $('btnSettings').addEventListener('click', openSettings);
+  $('navSettings').addEventListener('click', openSettings);
+  settings.addEventListener('close', function () { $('navSettings').setAttribute('aria-expanded', 'false'); });
   $('btnLock').addEventListener('click', function () {
     flush();
     showAccess(false);
@@ -1604,8 +1710,7 @@ body[data-background="blue"] { --bg: #E1ECF8; }
   /* Старт */
   bindMeta(); bindControls(); initFold(); renderCats(); renderWorks(); renderItems();
   $('banner').hidden = !state.sample;
-  document.body.dataset.view = 'form';
-  $('btnView').textContent = 'Показать акт';
+  setView('form');
   refresh(); updateHistBtn();
 })();
 </script>
