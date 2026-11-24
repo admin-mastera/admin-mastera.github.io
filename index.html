@@ -7,13 +7,13 @@
 <meta name="color-scheme" content="light dark">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="МастерАкт">
+<meta name="apple-mobile-web-app-title" content="Act Master">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>МастерАкт</title>
+<title>Act Master</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -419,15 +419,44 @@ body[data-background="blue"] { --bg: #E1ECF8; }
   body[data-background="blue"] { --bg: #202D3B; }
 }
 .access-locked {
+  --welcome-gold: rgba(246, 167, 46, .46);
+  --welcome-edge: rgba(105, 67, 43, .79);
   display: grid; place-items: center; min-height: 100vh; min-height: 100svh;
-  padding-block: clamp(16px, 4vh, 32px);
+  padding-block: clamp(16px, 4vh, 32px); overflow-x: clip;
+  background: #141316;
+}
+.access-locked[data-background="blue"] { --welcome-edge: rgba(57, 83, 130, .86); }
+.access-locked[data-background="sand"] { --welcome-edge: rgba(128, 78, 38, .86); }
+.access-locked::before, .access-locked::after {
+  content: ""; position: fixed; pointer-events: none;
+}
+.access-locked::before {
+  inset: -16%;
+  background:
+    radial-gradient(ellipse at 20% 14%, var(--welcome-gold), transparent 48%),
+    radial-gradient(ellipse at 90% 77%, var(--welcome-edge), transparent 54%),
+    radial-gradient(ellipse at 46% 98%, rgba(110, 61, 34, .72), transparent 53%),
+    linear-gradient(145deg, #15151B, #252021 63%, #16161B);
+  animation: ambient-drift 17s ease-in-out infinite;
+}
+.access-locked::after {
+  inset: -6%;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 39px, rgba(255,221,150,.17) 39px 40px),
+    repeating-linear-gradient(90deg, transparent 0 39px, rgba(255,221,150,.17) 39px 40px);
+  -webkit-mask-image: radial-gradient(ellipse at 91% 18%, #000, transparent 58%);
+  mask-image: radial-gradient(ellipse at 91% 18%, #000, transparent 58%);
+  opacity: .45;
+  animation: ambient-grid 13s ease-in-out infinite;
 }
 .access-panel, .settings-panel {
   width: min(100%, 420px); border-radius: 28px;
   border: 1px solid var(--line); background: var(--surface); color: var(--fg);
 }
 .access-panel {
-  overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, .13);
+  position: relative; z-index: 1; overflow: hidden;
+  border-color: rgba(255,255,255,.2);
+  box-shadow: 0 25px 65px rgba(0,0,0,.35);
   animation: welcome-in 560ms cubic-bezier(.17,.72,.28,1) both;
 }
 .access-hero {
@@ -441,15 +470,19 @@ body[data-background="blue"] { --bg: #E1ECF8; }
 .access-hero::after {
   content: ""; position: absolute; inset: -65% -55%; z-index: -1; pointer-events: none;
   background: linear-gradient(113deg, transparent 44%, rgba(255,219,116,.14) 49%, rgba(255,244,212,.27) 51%, transparent 57%);
-  transform: translateX(-45%); animation: welcome-light 5s ease-in-out 1 both;
+  transform: translateX(-45%); animation: welcome-light 7s ease-in-out infinite;
 }
 .access-emblem {
   display: grid; place-items: center; width: 70px; height: 70px; border-radius: 22px;
   border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.07);
   box-shadow: 0 8px 26px rgba(0,0,0,.2);
+  animation: welcome-logo 6s ease-in-out infinite;
 }
 .access-emblem svg { width: 47px; height: 47px; }
-.access-hero h1 { margin: 0; font: 800 clamp(28px, 7vw, 36px)/1.08 var(--display); letter-spacing: -.045em; }
+.access-hero h1 {
+  margin: 0; font: 800 clamp(30px, 8vw, 40px)/1.08 var(--display); letter-spacing: -.05em;
+  animation: welcome-brand 820ms cubic-bezier(.17,.72,.28,1) both;
+}
 .access-panel form { display: grid; gap: 13px; padding: clamp(16px, 5vw, 24px); }
 .access-panel h2, .settings-panel h2 { margin: 0; font: 750 22px/1.15 var(--display); letter-spacing: -.025em; }
 .access-hint { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
@@ -466,8 +499,24 @@ body[data-background="blue"] { --bg: #E1ECF8; }
 }
 @keyframes welcome-light {
   0% { transform: translateX(-45%); opacity: .15; }
-  45% { opacity: .85; }
-  100% { transform: translateX(44%); opacity: 0; }
+  37% { opacity: .85; }
+  72%, 100% { transform: translateX(44%); opacity: 0; }
+}
+@keyframes ambient-drift {
+  0%, 100% { transform: translate(-4%, -2%) scale(1); }
+  50% { transform: translate(6%, 4%) scale(1.09); }
+}
+@keyframes ambient-grid {
+  0%, 100% { transform: translate(0, 0); opacity: .42; }
+  50% { transform: translate(-12px, 8px); opacity: .63; }
+}
+@keyframes welcome-logo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes welcome-brand {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .settings-panel { width: min(calc(100% - 32px), 420px); max-height: calc(100% - 32px); padding: clamp(16px, 5vw, 24px); }
 .settings-panel::backdrop { background: rgba(0, 0, 0, .55); }
@@ -486,14 +535,18 @@ body[data-background="blue"] { --bg: #E1ECF8; }
 .motion-option input:checked {
   background: radial-gradient(circle at 32px center, #fff 0 8px, transparent 8.7px), #876200;
 }
-body[data-motion="off"] .topbar::after, body[data-motion="off"] .access-panel, body[data-motion="off"] .access-hero::after { animation: none; }
+body[data-motion="off"] .topbar::after,
+body[data-motion="off"].access-locked::before, body[data-motion="off"].access-locked::after,
+body[data-motion="off"] .access-panel, body[data-motion="off"] .access-hero::after,
+body[data-motion="off"] .access-emblem, body[data-motion="off"] .access-hero h1 { animation: none; }
 body[data-motion="off"] button { transition: none; }
 body[data-motion="off"] button:not(:disabled):active { transform: none; }
 .settings-actions { display: grid; gap: 8px; }
 .access-error, .settings-status { margin: 0; color: var(--danger); }
 .access-error:empty, .settings-status:empty { display: none; }
 @media (prefers-reduced-motion: reduce) {
-  .access-panel, .access-hero::after { animation: none; }
+  .access-locked::before, .access-locked::after,
+  .access-panel, .access-hero::after, .access-emblem, .access-hero h1 { animation: none; }
 }
 </style>
 </head>
@@ -511,7 +564,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
 <main class="access-panel" id="accessPanel" aria-labelledby="accessTitle">
   <header class="access-hero">
     <div class="access-emblem"><svg aria-hidden="true" viewBox="0 0 40 40"><use href="#brand-mark"/></svg></div>
-    <h1 id="accessTitle">МастерАкт</h1>
+    <h1 id="accessTitle" lang="en">Act Master</h1>
   </header>
   <form id="accessForm" novalidate>
     <div>
@@ -536,7 +589,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     <div class="brand">
       <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><use href="#brand-mark"/></svg>
       <div>
-        <h1>МастерАкт</h1>
+        <h1 lang="en">Act Master</h1>
         <small>Заполните данные, акт соберётся сам</small>
       </div>
     </div>
