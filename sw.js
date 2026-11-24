@@ -1,10 +1,12 @@
 // Офлайн-режим для «Акт мастера»: страница, шрифты и библиотеки сохраняются в телефоне.
 var CACHE_PREFIX = 'akt-master:' + self.registration.scope;
-var CACHE = CACHE_PREFIX + ':v1';
+var CACHE = CACHE_PREFIX + ':v2';
 var CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(CORE); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(CACHE).then(function (c) {
+    return c.addAll(CORE.map(function (url) { return new Request(url, { cache: 'reload' }); }));
+  }).then(function () { return self.skipWaiting(); }));
 });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (keys) {

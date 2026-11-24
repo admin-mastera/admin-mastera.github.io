@@ -94,7 +94,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .brand svg { flex: none; }
 .brand h1 { margin: 0; font: 800 28px/1.05 var(--display); letter-spacing: -.01em; }
 .brand small { display: block; color: rgba(243,241,236,.72); font-size: 14px; line-height: 1.3; margin-top: 4px; }
-.top-actions { display: flex; gap: 8px; }
+.top-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .topbar .btn { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.24); color: var(--hero-fg); }
 .topbar .btn:hover { background: rgba(255,255,255,.16); }
 .topbar .btn.warn { color: #FFB4AB; border-color: #FFB4AB; }
@@ -368,11 +368,57 @@ body:not([data-view="history"]) .history { display: none; }
   .p-head h3 { font-size: 22px; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+
+body[data-background="sand"] { --bg: #F3E8D3; }
+body[data-background="blue"] { --bg: #E1ECF8; }
+@media (prefers-color-scheme: dark) {
+  body[data-background="sand"] { --bg: #30281D; }
+  body[data-background="blue"] { --bg: #202D3B; }
+}
+.access-panel, .settings-panel {
+  box-sizing: border-box; width: min(100%, 420px); border-radius: 16px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  padding: clamp(16px, 5vw, 24px);
+}
+.access-panel { margin: clamp(18px, 8vh, 80px) auto 0; }
+.access-panel h1, .settings-panel h2 { margin: 0; line-height: 1.2; }
+.access-panel p { margin: 10px 0; }
+.access-panel form { display: grid; gap: 12px; }
+.access-panel .btn, .settings-panel .btn { min-height: 44px; }
+.settings-panel { width: min(calc(100% - 32px), 420px); max-height: calc(100% - 32px); }
+.settings-panel::backdrop { background: rgba(0, 0, 0, .55); }
+.settings-panel fieldset { margin: 16px 0; padding: 0; border: 0; }
+.settings-panel legend { font-weight: 600; margin-bottom: 6px; }
+.background-option {
+  display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer;
+}
+.background-option input { accent-color: var(--accent-ink); }
+.background-swatch { width: 28px; height: 22px; border-radius: 5px; border: 1px solid var(--line); }
+.settings-actions { display: grid; gap: 8px; }
+.access-error, .settings-status { margin: 0; color: var(--danger); }
+.access-error:empty, .settings-status:empty { display: none; }
 </style>
 </head>
 <body>
 
-<div class="app">
+<main class="access-panel" id="accessPanel" aria-labelledby="accessTitle">
+  <h1 id="accessTitle">Акт мастера</h1>
+  <p id="accessHint">Код действует в этом браузере.</p>
+  <form id="accessForm" novalidate>
+    <div class="fld">
+      <label for="accessCode" id="accessCodeLabel">Код входа</label>
+      <input id="accessCode" type="password" inputmode="numeric" autocomplete="off" maxlength="12" required>
+    </div>
+    <div class="fld" id="confirmCodeField" hidden>
+      <label for="confirmCode">Повторите код</label>
+      <input id="confirmCode" type="password" inputmode="numeric" autocomplete="off" maxlength="12">
+    </div>
+    <div class="access-error" id="accessError" role="alert"></div>
+    <button type="submit" class="btn primary" id="accessSubmit">Войти</button>
+  </form>
+</main>
+
+<div class="app" id="actApp" hidden>
   <header class="topbar">
     <div class="brand">
       <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
@@ -390,6 +436,7 @@ body:not([data-view="history"]) .history { display: none; }
     <div class="top-actions">
       <button type="button" class="btn" id="btnHistory">История</button>
       <button type="button" class="btn" id="btnNew">Новый акт</button>
+      <button type="button" class="btn" id="btnSettings">Настройки</button>
     </div>
   </header>
 
@@ -521,11 +568,26 @@ body:not([data-view="history"]) .history { display: none; }
   </main>
 </div>
 
-<div class="bar" id="bar">
+<div class="bar" id="bar" hidden>
   <div><div class="lbl">К оплате</div><div class="val" id="barVal">0</div></div>
   <button type="button" class="btn primary" id="btnView">Показать акт</button>
 </div>
 <div class="toast" id="toast" hidden></div>
+<dialog id="settingsPanel" class="settings-panel" aria-labelledby="settingsTitle">
+  <h2 id="settingsTitle">Настройки</h2>
+  <fieldset id="backgroundChoices">
+    <legend>Фон приложения</legend>
+    <label class="background-option"><input type="radio" name="background" value="standard" checked><span class="background-swatch" style="background:#ECEBE7"></span>Стандартный</label>
+    <label class="background-option"><input type="radio" name="background" value="sand"><span class="background-swatch" style="background:#F3E8D3"></span>Песочный</label>
+    <label class="background-option"><input type="radio" name="background" value="blue"><span class="background-swatch" style="background:#E1ECF8"></span>Голубой</label>
+  </fieldset>
+  <div class="settings-actions">
+    <button type="button" class="btn" id="btnUpdate">Обновить сайт</button>
+    <div class="settings-status" id="updateStatus" role="status"></div>
+    <button type="button" class="btn" id="btnLock">Выйти и заблокировать</button>
+    <form method="dialog"><button type="submit" class="btn primary">Готово</button></form>
+  </div>
+</dialog>
 
 <script>
 (function () {
@@ -1394,6 +1456,147 @@ body:not([data-view="history"]) .history { display: none; }
   /* Клавиатура: прячем нижнюю панель, пока вводите текст */
   document.addEventListener('focusin', function (e) { if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) document.body.classList.add('typing'); });
   document.addEventListener('focusout', function () { document.body.classList.remove('typing'); });
+
+  /* Код и оформление хранятся в этом браузере. */
+  var accessKey = 'akt-master-access-v1';
+  var lockKey = 'akt-master-lock';
+  var backgroundKey = 'akt-master-background';
+  var accessForm = $('accessForm');
+  var accessCode = $('accessCode');
+  var confirmCode = $('confirmCode');
+  var accessSubmit = $('accessSubmit');
+  var accessError = $('accessError');
+  var settings = $('settingsPanel');
+  var accessAttempt = 0;
+
+  function showAccess(focus) {
+    accessAttempt++;
+    if (settings.open) settings.close();
+    $('actApp').hidden = true;
+    $('bar').hidden = true;
+    $('toast').hidden = true;
+    $('accessPanel').hidden = false;
+    accessForm.reset();
+    accessError.textContent = '';
+    try {
+      var setup = localStorage.getItem(accessKey) === null;
+      $('accessCodeLabel').textContent = setup ? 'Придумайте код' : 'Код входа';
+      $('accessHint').textContent = setup
+        ? 'Введите от 4 до 12 цифр и повторите код. Он действует в этом браузере.'
+        : 'Введите код, который вы задали для этого браузера.';
+      $('confirmCodeField').hidden = !setup;
+      accessSubmit.textContent = setup ? 'Сохранить код и войти' : 'Войти';
+      if (focus) accessCode.focus();
+    } catch (error) {
+      accessError.textContent = 'Разрешите браузеру сохранять данные этого сайта и обновите страницу.';
+    }
+  }
+
+  async function hashCode(code, salt) {
+    var key = await crypto.subtle.importKey('raw', new TextEncoder().encode(code), 'PBKDF2', false, ['deriveBits']);
+    var hash = await crypto.subtle.deriveBits({
+      name: 'PBKDF2', salt: salt, iterations: 600000, hash: 'SHA-256'
+    }, key, 256);
+    return btoa(String.fromCharCode.apply(null, new Uint8Array(hash)));
+  }
+
+  accessForm.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    if (accessSubmit.disabled) return;
+    var code = accessCode.value;
+    accessError.textContent = '';
+    if (!/^\d{4,12}$/.test(code)) {
+      accessError.textContent = 'Код должен содержать от 4 до 12 цифр.';
+      accessCode.focus();
+      return;
+    }
+    accessSubmit.disabled = true;
+    var attempt = accessAttempt;
+    try {
+      var saved = localStorage.getItem(accessKey);
+      if (saved === null) {
+        if (code !== confirmCode.value) {
+          accessError.textContent = 'Коды не совпадают. Повторите код.';
+          confirmCode.focus();
+          return;
+        }
+        var salt = crypto.getRandomValues(new Uint8Array(16));
+        var hash = await hashCode(code, salt);
+        if (attempt !== accessAttempt) return;
+        if (localStorage.getItem(accessKey) !== null) {
+          showAccess(true);
+          accessError.textContent = 'Код уже задан в другой вкладке. Введите его для входа.';
+          return;
+        }
+        localStorage.setItem(accessKey, JSON.stringify({
+          salt: btoa(String.fromCharCode.apply(null, salt)), hash: hash
+        }));
+      } else {
+        var record = JSON.parse(saved);
+        var savedSalt = Uint8Array.from(atob(record.salt), function (ch) { return ch.charCodeAt(0); });
+        var candidate = await hashCode(code, savedSalt);
+        if (attempt !== accessAttempt) return;
+        if (candidate !== record.hash) {
+          accessError.textContent = 'Неверный код. Попробуйте ещё раз.';
+          accessCode.select();
+          return;
+        }
+      }
+      document.activeElement.blur();
+      accessForm.reset();
+      $('accessPanel').hidden = true;
+      $('actApp').hidden = false;
+      $('bar').hidden = false;
+      window.scrollTo(0, 0);
+    } catch (error) {
+      accessError.textContent = 'Не удалось проверить код. Откройте сайт по HTTPS и разрешите браузеру сохранять данные.';
+    } finally {
+      accessSubmit.disabled = false;
+    }
+  });
+
+  function setBackground(value) {
+    var background = value === 'sand' || value === 'blue' ? value : 'standard';
+    document.body.dataset.background = background;
+    $('backgroundChoices').querySelector('[value="' + background + '"]').checked = true;
+  }
+
+  $('backgroundChoices').addEventListener('change', function (event) {
+    setBackground(event.target.value);
+    try { localStorage.setItem(backgroundKey, document.body.dataset.background); } catch (error) {}
+  });
+  try { setBackground(localStorage.getItem(backgroundKey)); } catch (error) { setBackground('standard'); }
+
+  $('btnSettings').addEventListener('click', function () { settings.showModal(); });
+  $('btnLock').addEventListener('click', function () {
+    flush();
+    showAccess(false);
+    window.scrollTo(0, 0);
+    try { localStorage.setItem(lockKey, String(Date.now())); } catch (error) {}
+  });
+  window.addEventListener('storage', function (event) {
+    if (event.key === lockKey) showAccess(false);
+    if (event.key === backgroundKey) setBackground(event.newValue);
+    if (event.key === accessKey && !$('accessPanel').hidden && !accessSubmit.disabled) showAccess(false);
+  });
+  window.addEventListener('pageshow', function (event) { if (event.persisted) showAccess(false); });
+  $('btnUpdate').addEventListener('click', async function () {
+    var button = $('btnUpdate');
+    var status = $('updateStatus');
+    button.disabled = true;
+    status.textContent = '';
+    try {
+      if (!navigator.onLine) throw new Error('offline');
+      flush();
+      var registration = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+      if (registration) await registration.update();
+      window.location.reload();
+    } catch (error) {
+      status.textContent = 'Не удалось обновить сайт. Проверьте подключение к интернету.';
+      button.disabled = false;
+    }
+  });
+  showAccess(false);
 
   window.addEventListener('pagehide', flush);
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
