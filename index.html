@@ -202,6 +202,8 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
 .item-nums input, .item-nums select { padding-left: 10px; padding-right: 8px; }
 .item-foot { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; font-size: 13px; color: var(--muted); }
 .item-foot strong { color: var(--fg); font-size: 16px; font-variant-numeric: tabular-nums; }
+.save-row { display: flex; justify-content: flex-end; }
+.save-row .btn { min-height: 44px; }
 .empty { border: 1px dashed var(--line); border-radius: 8px; padding: 18px; text-align: center; color: var(--muted); font-size: 14px; }
 
 .sum-box { display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 12px; }
@@ -210,6 +212,25 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
 
 /* Акт */
 .pv-tools { display: grid; gap: 12px; margin-bottom: 14px; }
+.act-card {
+  display: grid; grid-template-columns: 48px minmax(0, 1fr) 20px; align-items: center; gap: 12px;
+  width: 100%; text-align: left; margin-bottom: 14px; padding: 12px;
+  border: 1px solid var(--line); border-radius: 19px; background: var(--surface); box-shadow: var(--shadow); cursor: pointer;
+}
+.act-thumb {
+  display: grid; align-content: center; gap: 5px; min-height: 59px; padding: 8px;
+  border-radius: 7px; border: 1px solid #ccc6b7; background: #fbfaf7;
+  box-shadow: inset 0 3px 0 #f4b400;
+}
+.act-thumb i { display: block; height: 2px; background: #c0b8a6; border-radius: 2px; }
+.act-thumb i:first-child { width: 72%; background: #555249; }
+.act-thumb i:last-child { width: 62%; }
+.act-card-text { display: grid; gap: 2px; min-width: 0; }
+.act-card-text strong, .act-card-text span { overflow-wrap: anywhere; }
+.act-card-text strong { font-size: 15px; line-height: 1.25; }
+.act-card-text span { color: var(--muted); font-size: 12.5px; }
+.act-card > svg { width: 20px; height: 20px; color: var(--muted); }
+.act-card[aria-expanded="true"] > svg { transform: rotate(180deg); }
 .pv-tools p { margin: 0; color: var(--muted); font-size: 13px; }
 .copy-fallback { width: 100%; margin-bottom: 12px; min-height: 120px; font-size: 13px; }
 .copy-fallback[hidden] { display: none; }
@@ -406,6 +427,7 @@ body:not([data-view="history"]) .history { display: none; }
   body { padding-block: 0 32px; }
   .layout { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 24px; align-items: start; }
   .pane-preview { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+  .act-card { display: none; }
   .bar { display: none; }
   .toast { bottom: 24px; }
 }
@@ -414,10 +436,17 @@ body:not([data-view="history"]) .history { display: none; }
   .pane-preview .parties { grid-template-columns: max-content minmax(0, 1fr); gap: 6px 8px; }
   .pane-preview .p-head h3 { font-size: 22px; }
   .pane-preview .p-head .no { display: flex; width: 100%; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; text-align: left; }
-  .pane-preview .paper table { min-width: 0; font-size: 11.5px; line-height: 1.35; }
+  .pane-preview .paper table { min-width: 0; table-layout: fixed; font-size: 11.5px; line-height: 1.35; }
+  .pane-preview .paper col:nth-child(1) { width: 6%; }
+  .pane-preview .paper col:nth-child(2) { width: 36%; }
+  .pane-preview .paper col:nth-child(3) { width: 12%; }
+  .pane-preview .paper col:nth-child(4) { width: 12%; }
+  .pane-preview .paper col:nth-child(5) { width: 15%; }
+  .pane-preview .paper col:nth-child(6) { width: 19%; }
   .pane-preview .paper th { font-size: 9.5px; letter-spacing: 0; }
   .pane-preview .paper th, .pane-preview .paper td { padding: 5px 3px; }
   .pane-preview .paper td.n { width: auto; }
+  .pane-preview .paper .r, .pane-preview .paper .unit-cell { white-space: normal; overflow-wrap: anywhere; }
   .pane-preview .paper .note { font-size: 10.5px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -625,6 +654,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     <div class="top-actions">
       <button type="button" class="btn desktop-action" id="btnHistory">Архив</button>
       <button type="button" class="btn" id="btnNew">Новый акт</button>
+      <button type="button" class="btn" id="btnSaveAct" data-save-act>Сохранить акт</button>
       <button type="button" class="btn desktop-action" id="btnSettings" aria-haspopup="dialog">Настройки</button>
     </div>
   </header>
@@ -741,19 +771,28 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     </section>
 
     <section class="pane pane-preview" aria-label="Готовый акт">
+      <button class="act-card" type="button" id="actCard" aria-controls="fullAct" aria-expanded="false">
+        <span class="act-thumb" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span class="act-card-text">
+          <span id="actCardNumber"></span>
+          <strong id="actCardTitle"></strong>
+          <span id="actCardAddress"></span>
+          <span id="actCardClient"></span>
+        </span>
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
       <div class="pv-tools">
         <p class="hint" id="samplePreview" hidden>Пример акта</p>
         <div class="tpl"><span class="lbl">Шаблон акта</span><div class="chips" id="tplChips" role="group" aria-label="Шаблон акта"></div></div>
         <div class="pv-btns">
-          <button type="button" class="btn primary" id="btnPdf" aria-haspopup="dialog">Скачать PDF</button>
+          <button type="button" class="btn primary" id="btnPdf" aria-haspopup="dialog">Скачать или отправить PDF</button>
           <button type="button" class="btn" id="btnPng">Скачать картинку</button>
           <button type="button" class="btn" id="btnCopy">Копировать текст</button>
         </div>
         <p class="hint" id="pdfStatus" role="status" hidden></p>
-        <p class="hint">В Telegram откройте нужный чат и прикрепите скачанный PDF через «Файл».</p>
       </div>
       <textarea class="copy-fallback" id="copyFallback" readonly hidden aria-label="Текст акта для копирования"></textarea>
-      <article class="paper" id="paper"></article>
+      <div id="fullAct" hidden><article class="paper" id="paper"></article></div>
     </section>
   </main>
 </div>
@@ -820,8 +859,9 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   </div>
   <div class="settings-actions">
     <p class="download-name" id="downloadName"></p>
-    <a class="btn primary" id="downloadPdf" download>Сохранить файл PDF</a>
-    <p class="download-hint">После скачивания откройте нужный чат Telegram и выберите «Скрепка» → «Файл» → «Загрузки».</p>
+    <button type="button" class="btn primary" id="sendPdfFile" hidden>Отправить PDF-файл</button>
+    <a class="btn" id="downloadPdf" download>Скачать PDF-файл</a>
+    <p class="download-hint">Скачанный PDF можно прикрепить в Telegram или WhatsApp как документ.</p>
     <div class="settings-status" id="downloadStatus" role="status"></div>
   </div>
 </dialog>
@@ -1115,17 +1155,19 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   function loadHist() {
     try { var a = JSON.parse(localStorage.getItem(HKEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
   }
-  function saveHist(list) { try { localStorage.setItem(HKEY, JSON.stringify(list)); } catch (e) {} }
+  function saveHist(list) {
+    try { localStorage.setItem(HKEY, JSON.stringify(list)); return true; } catch (e) { return false; }
+  }
   function isEmptyAct(st) { return !st.items.length && !(st.meta.client || st.meta.address || st.meta.title); }
   function upsertHistory() {
-    if (state.sample || isEmptyAct(state)) return;
+    if (state.sample || (!state.saved && isEmptyAct(state))) return true;
     var list = loadHist(), snap = copyOf({ id: state.id, meta: state.meta, items: state.items });
     snap.updated = Date.now();
     var i = -1;
     list.forEach(function (a, k) { if (a.id === state.id) i = k; });
     if (i === -1) list.unshift(snap); else list[i] = snap;
     list.sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); });
-    saveHist(list.slice(0, 200));
+    return saveHist(list.slice(0, 200));
   }
   function nextNumber() {
     var max = 0;
@@ -1133,12 +1175,14 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     return max + 1;
   }
   function persist() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
-    upsertHistory(); updateHistBtn();
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { return false; }
+    var archived = upsertHistory();
+    updateHistBtn();
+    return archived;
   }
   var saveTimer = null;
   function save() { clearTimeout(saveTimer); saveTimer = setTimeout(persist, 250); }
-  function flush() { clearTimeout(saveTimer); persist(); }
+  function flush() { clearTimeout(saveTimer); return persist(); }
   function updateHistBtn() {
     var n = loadHist().length;
     $('btnHistory').textContent = n ? 'Архив (' + n + ')' : 'Архив';
@@ -1257,7 +1301,8 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
         '<div class="fld"><span class="lbl">Где выполнена работа</span><div class="chips places" role="group" aria-label="Помещение, можно выбрать несколько"></div></div>' +
         '<div class="fld"><label for="d-' + it.id + '">Уточнение к работе</label>' +
         (hints.length ? '<div class="chips tags" role="group" aria-label="Готовые варианты уточнения, можно выбрать несколько"></div>' : '') +
-        '<input type="text" id="d-' + it.id + '" class="in-note" placeholder="Или впишите свой текст"></div>';
+        '<input type="text" id="d-' + it.id + '" class="in-note" placeholder="Или впишите свой текст"></div>' +
+        '<div class="save-row"><button type="button" class="btn" data-save-act>Сохранить работу</button></div>';
       var inName = row.querySelector('.in-name'), inNote = row.querySelector('.in-note'), inQty = row.querySelector('.in-qty'),
           inUnit = row.querySelector('.in-unit'), inPrice = row.querySelector('.in-price'), sum = row.querySelector('.sum'),
           help = row.querySelector('.unit-help'),
@@ -1329,6 +1374,10 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   function renderPaper() {
     var m = state.meta, c = calc(), l = cur().label, rows = '';
     $('samplePreview').hidden = !state.sample;
+    $('actCardNumber').textContent = '№ ' + (m.number || '—');
+    $('actCardTitle').textContent = textOr(m.docTitle, DEF.title);
+    $('actCardAddress').textContent = 'Адрес: ' + ([m.city, m.address].filter(Boolean).join(', ') || '—');
+    $('actCardClient').textContent = 'Заказчик: ' + (m.client || '—');
     if (!state.items.length) {
       rows = '<tr><td class="empty-row" colspan="6">Работы пока не добавлены</td></tr>';
     } else {
@@ -1359,7 +1408,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       '<dt>Заказчик</dt><dd>' + blank(m.client) + (m.clientPhone ? ', тел. ' + esc(m.clientPhone) : '') + '</dd>' +
       '<dt>Исполнитель</dt><dd>' + blank(m.worker) + (m.workerPhone ? ', тел. ' + esc(m.workerPhone) : '') + '</dd></dl>' +
       '<p class="statement">' + esc(textOr(m.intro, DEF.intro)) + '</p>' +
-      '<div class="tbl-wrap"><table><thead><tr><th scope="col" class="c">№</th><th scope="col">Наименование работ</th><th scope="col" class="unit-cell">Ед.</th><th scope="col" class="r">Кол-во</th><th scope="col" class="r">Цена<span class="currency">' + esc(l) + ' / ед.</span></th><th scope="col" class="r">Сумма<span class="currency">' + esc(l) + '</span></th></tr></thead><tbody>' + rows + '</tbody><tfoot>' + foot + '</tfoot></table></div>' +
+      '<div class="tbl-wrap"><table><colgroup><col><col><col><col><col><col></colgroup><thead><tr><th scope="col" class="c">№</th><th scope="col">Наименование работ</th><th scope="col" class="unit-cell">Ед.</th><th scope="col" class="r">Кол-во</th><th scope="col" class="r">Цена<span class="currency">' + esc(l) + ' / ед.</span></th><th scope="col" class="r">Сумма<span class="currency">' + esc(l) + '</span></th></tr></thead><tbody>' + rows + '</tbody><tfoot>' + foot + '</tfoot></table></div>' +
       (words ? '<p class="words"><span>К оплате прописью:</span> ' + esc(words) + '</p>' : '') +
       '<p class="statement">' + esc(textOr(m.closing, DEF.closing)) + '</p>' +
       wt + notes +
@@ -1440,6 +1489,10 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     var ui = loadUi();
     document.querySelectorAll('details.card').forEach(function (d) {
       var k = d.dataset.sec;
+      var actions = document.createElement('div');
+      actions.className = 'save-row';
+      actions.innerHTML = '<button type="button" class="btn" data-save-act>Сохранить раздел</button>';
+      d.querySelector('.card-body').appendChild(actions);
       if (ui[k] !== undefined) d.open = !!ui[k];
       d.addEventListener('toggle', function () {
         var u = loadUi(); u[k] = d.open;
@@ -1462,7 +1515,15 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   var lastView = 'form';
   var viewKey = 'akt-master-location-v1';
   var previewPane = document.querySelector('.pane-preview');
+  var narrowScreen = window.matchMedia('(max-width: 979px)');
+  var paperExpanded = false;
   var scrollTimer = null;
+
+  function syncActCard() {
+    var expanded = !narrowScreen.matches || paperExpanded;
+    $('actCard').setAttribute('aria-expanded', String(expanded));
+    $('fullAct').hidden = !expanded;
+  }
 
   function rememberLocation() {
     clearTimeout(scrollTimer);
@@ -1470,7 +1531,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     try {
       localStorage.setItem(viewKey, JSON.stringify({
         act: state.id, view: document.body.dataset.view, lastView: lastView,
-        y: window.scrollY, previewY: previewPane.scrollTop
+        y: window.scrollY, previewY: previewPane.scrollTop, paperExpanded: paperExpanded
       }));
     } catch (error) {}
   }
@@ -1493,6 +1554,8 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   }
 
   function setView(v, position) {
+    if (position) paperExpanded = !!position.paperExpanded;
+    syncActCard();
     if (v !== 'history') lastView = v;
     document.body.dataset.view = v;
     $('bar').querySelectorAll('[data-nav]').forEach(function (button) {
@@ -1507,19 +1570,28 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
 
   window.addEventListener('scroll', rememberAfterScroll, { passive: true });
   previewPane.addEventListener('scroll', rememberAfterScroll, { passive: true });
+  if (narrowScreen.addEventListener) narrowScreen.addEventListener('change', syncActCard);
+  else narrowScreen.addListener(syncActCard);
+  $('actCard').addEventListener('click', function () {
+    paperExpanded = !paperExpanded;
+    syncActCard();
+    rememberLocation();
+  });
 
   function loadAct(a, view) {
     flush();
-    state = { id: a.id, sample: false, cats: state.cats, meta: Object.assign(blankMeta(), copyOf(a.meta)), items: copyOf(a.items).map(normItem) };
+    state = { id: a.id, sample: false, saved: true, cats: state.cats, meta: Object.assign(blankMeta(), copyOf(a.meta)), items: copyOf(a.items).map(normItem) };
+    paperExpanded = false;
     $('banner').hidden = true;
     syncMeta(); renderWorks(); renderItems(); refresh();
     setView(view || 'preview');
   }
   function newAct() {
-    if (!state.sample && isEmptyAct(state)) { toast('Это уже новый акт'); setView('form'); return; }
+    if (!state.sample && !state.saved && isEmptyAct(state)) { toast('Это уже новый акт'); setView('form'); return; }
     flush();
     var n = nextNumber(), prev = state.meta;
     state = { id: uid(), sample: false, cats: state.cats, meta: blankMeta(), items: [] };
+    paperExpanded = false;
     state.meta.number = String(n);
     state.meta.worker = prev.worker; state.meta.workerPhone = prev.workerPhone; state.meta.city = prev.city; state.meta.template = prev.template; state.meta.signMode = prev.signMode;
     $('banner').hidden = true;
@@ -1530,6 +1602,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   function loadSample() {
     flush();
     state = sample();
+    paperExpanded = false;
     syncMeta(); renderCats(); renderWorks(); renderItems(); $('banner').hidden = false; refresh();
     setView('form');
   }
@@ -1589,6 +1662,17 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   }
 
   /* Кнопки */
+  $('actApp').addEventListener('click', function (event) {
+    if (!event.target.closest('[data-save-act]')) return;
+    touch();
+    state.saved = true;
+    renderPaper();
+    rememberLocation();
+    var saved = flush();
+    toast(saved
+      ? (state.meta.number ? 'Акт № ' + state.meta.number + ' сохранён' : 'Акт сохранён')
+      : 'Не удалось сохранить акт. Проверьте, разрешено ли сохранение в браузере.');
+  });
   $('btnCustom').addEventListener('click', function () { addItem({ name: '', unit: 'шт.', units: U_CUSTOM, hints: [] }, 'other'); });
   $('btnNew').addEventListener('click', newAct);
   $('btnHistory').addEventListener('click', function () { setView('history'); });
@@ -1739,11 +1823,20 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   var inClaude = !!(window.claude && window.claude.use);
   var downloadPanel = $('downloadPanel');
   var downloadLink = $('downloadPdf');
+  var sendPdf = $('sendPdfFile');
   var downloadFile = null;
   var downloadUrl = null;
 
+  function canSendPdf(file) {
+    try {
+      return !inClaude && typeof navigator.share === 'function' &&
+        typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
+    } catch (error) { return false; }
+  }
+
   $('btnPdf').addEventListener('click', function () {
     withBusy(this, async function () {
+      setPdfStatus('');
       try {
         var file = await getFile('pdf');
         if (file !== readyPdf()) return;
@@ -1751,6 +1844,8 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
         downloadUrl = URL.createObjectURL(file);
         downloadLink.href = downloadUrl;
         downloadLink.download = file.name;
+        sendPdf.hidden = !canSendPdf(file);
+        downloadLink.classList.toggle('primary', sendPdf.hidden);
         $('downloadName').textContent = file.name;
         $('downloadStatus').textContent = '';
         downloadPanel.showModal();
@@ -1758,6 +1853,24 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
         setPdfStatus('Не удалось подготовить PDF. Проверьте подключение и попробуйте снова.');
       }
     });
+  });
+  sendPdf.addEventListener('click', async function () {
+    var file = downloadFile;
+    if (!file || sendPdf.disabled) return;
+    sendPdf.disabled = true;
+    $('downloadStatus').textContent = '';
+    try {
+      var sending = navigator.share({ files: [file] });
+      if (!sending || typeof sending.then !== 'function') throw new Error('Sharing unavailable');
+      await sending;
+      if (downloadFile === file) downloadPanel.close();
+    } catch (error) {
+      if (error.name !== 'AbortError' && downloadFile === file) {
+        $('downloadStatus').textContent = 'Скачайте PDF и прикрепите его в чате как документ.';
+      }
+    } finally {
+      sendPdf.disabled = false;
+    }
   });
   downloadLink.addEventListener('click', async function (event) {
     if (!inClaude || !downloadFile) return;
