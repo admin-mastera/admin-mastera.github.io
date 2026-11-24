@@ -37,42 +37,6 @@
     trace([[x + width * .36, y], [x + width * .36, ground]], muted);
   }
 
-  function crane(width, height, seconds) {
-    const left = width * .09;
-    const right = width * .94;
-    const mast = width * .84;
-    const mastWidth = Math.min(29, width * .047);
-    const rail = height * .145;
-    const truss = Math.min(22, height * .029);
-    const base = height * .78;
-
-    trace([[left, rail], [left + truss, rail - truss], [right, rail - truss], [right, rail], [left, rail]], outline, 1.2);
-    trace([[mast, base], [mast, rail], [mast + mastWidth, rail], [mast + mastWidth, base]], outline, 1.2);
-    trace([[mast + mastWidth / 2, rail - truss * 2.6], [right, rail - truss],
-      [mast + mastWidth / 2, rail - truss * 2.6], [left + truss, rail - truss]], muted);
-
-    const supports = Math.ceil((right - left) / 48);
-    const span = (right - left - truss) / supports;
-    for (let support = 0; support < supports; support++) {
-      const x = left + truss + support * span;
-      trace([[x, rail - truss], [x + span / 2, rail], [x + span, rail - truss]], muted);
-    }
-    for (let y = rail + Math.min(32, height * .07); y < base; y += 36) {
-      trace([[mast, y - 17], [mast + mastWidth, y], [mast, y + 17]], muted);
-    }
-
-    const journey = (1 - Math.cos(seconds * .66)) / 2;
-    const hookX = width * (.22 + journey * .51);
-    const hookY = rail + height * (.067 + .034 * (1 + Math.sin(seconds * 1.22)));
-    const beamWidth = Math.min(54, width * .11);
-    const beamY = hookY + 12;
-    trace([[hookX, rail], [hookX, hookY], [hookX - beamWidth / 2, beamY],
-      [hookX + beamWidth / 2, beamY], [hookX, hookY]], 'rgba(255, 198, 111, .73)');
-    context.fillStyle = accent;
-    context.fillRect(hookX - 5, rail - 2, 10, 4);
-    context.fillRect(hookX - beamWidth / 2, beamY, beamWidth, 3);
-  }
-
   function fragments(width, height, seconds) {
     for (let index = 0; index < 30; index++) {
       const offset = index * 2.39996;
@@ -121,7 +85,6 @@
     building(-width * .06, height * .75, width * .40, height * .30, height * .046, 3);
     building(width * .58, height * .66, width * .27, height * .39, height * .043, 4);
     building(width * .77, height * .78, width * .26, height * .27, height * .037, 2);
-    crane(width, height, seconds);
     fragments(width, height, seconds);
   }
 

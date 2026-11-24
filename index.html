@@ -344,6 +344,11 @@ select { -webkit-appearance: none; appearance: none; background-image: url("data
 .card > summary .chev { flex: none; margin-left: auto; color: var(--muted); transition: transform .15s; }
 .card > summary .sm + .chev { margin-left: 4px; }
 .card[open] > summary .chev { transform: rotate(180deg); margin-left: auto; }
+.card[data-sec="s4"] > summary .chev {
+  width: 34px; height: 34px; padding: 4px; border-radius: 50%;
+  color: var(--fg); background: var(--surface-2); border: 1px solid var(--line);
+}
+.card[data-sec="s4"] > summary .chev path { stroke-width: 2.8; }
 .card-body { padding: 0 20px 20px; display: grid; gap: 16px; }
 
 /* Таблица акта: строгая, с сеткой */
@@ -362,16 +367,24 @@ select { -webkit-appearance: none; appearance: none; background-image: url("data
 .history { display: grid; gap: 14px; margin-bottom: 24px; }
 .h-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .h-head h2 { margin: 0; font: 800 24px/1.1 var(--display); letter-spacing: -.01em; }
+.h-head > .btn { margin-inline-start: auto; }
+.h-head .hint { margin: 4px 0 0; }
+.section-icon {
+  display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 14px;
+  color: var(--accent-ink); background: var(--surface-2);
+}
+.section-icon svg, .setting-heading svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .h-list { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
-.hcard { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 12px; box-shadow: var(--shadow); min-width: 0; }
+.hcard { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 16px; display: grid; gap: 13px; box-shadow: var(--shadow); min-width: 0; }
 .h-main { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; }
-.h-no { background: var(--accent); color: var(--on-accent); border-radius: 10px; padding: 8px 12px; font: 800 18px/1 var(--display); text-align: center; }
-.h-no small { display: block; font: 600 10px/1 var(--body); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
-.h-info { display: grid; gap: 2px; min-width: 0; }
-.h-info strong { overflow-wrap: anywhere; }
+.h-info { display: grid; gap: 3px; min-width: 0; }
+.h-info strong { overflow-wrap: anywhere; font-size: 16px; }
 .h-info span { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
-.h-sum { grid-column: 1 / -1; font: 700 18px/1.2 var(--display); font-variant-numeric: tabular-nums; }
-.h-act { display: flex; flex-wrap: wrap; gap: 8px; }
+.h-sum { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 8px 12px; border-radius: 12px; background: var(--surface-2); }
+.h-sum span { color: var(--muted); font-size: 13px; }
+.h-sum strong { font: 700 17px/1.2 var(--display); font-variant-numeric: tabular-nums; text-align: right; }
+.h-act { display: flex; flex-wrap: wrap; gap: 6px; }
+.h-act .h-open { margin-inline-end: auto; }
 body[data-view="history"] .layout, body[data-view="history"] .banner, body[data-view="history"] .bar-total { display: none; }
 body:not([data-view="history"]) .history { display: none; }
 @media (max-width: 480px) {
@@ -414,9 +427,16 @@ body:not([data-view="history"]) .history { display: none; }
 
 body[data-background="sand"] { --bg: #F3E8D3; }
 body[data-background="blue"] { --bg: #E1ECF8; }
+body[data-background="white"] { --bg: #FFFFFF; }
+body[data-accent="blue"] { --accent: #98BFFF; --accent-ink: #174B9B; --ring: #396DBE; }
+body[data-accent="green"] { --accent: #8DD8B4; --accent-ink: #176345; --ring: #267755; }
+body[data-font="inter"] { --body: 'Inter', system-ui, sans-serif; --display: var(--body); }
+body[data-font="serif"] { --body: Georgia, 'Times New Roman', serif; --display: var(--body); }
 @media (prefers-color-scheme: dark) {
   body[data-background="sand"] { --bg: #30281D; }
   body[data-background="blue"] { --bg: #202D3B; }
+  :root:not([data-theme="light"]) body[data-accent="blue"] { --accent-ink: #A5C7FF; --ring: #A5C7FF; }
+  :root:not([data-theme="light"]) body[data-accent="green"] { --accent-ink: #A7E3C5; --ring: #A7E3C5; }
 }
 .access-locked {
   --welcome-gold: rgba(206, 135, 36, .40);
@@ -502,15 +522,33 @@ body[data-background="blue"] { --bg: #E1ECF8; }
   width: min(calc(100% - 32px), 420px); max-height: calc(100% - 32px); padding: clamp(16px, 5vw, 24px);
   border-radius: 28px; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
 }
-.settings-panel::backdrop { background: rgba(0, 0, 0, .55); }
-.settings-panel fieldset { margin: 16px 0; padding: 0; border: 0; }
-.settings-panel legend { font-weight: 600; margin-bottom: 6px; }
+.settings-panel::backdrop { background: rgba(0, 0, 0, .48); backdrop-filter: blur(4px); }
+.settings-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.settings-head form { margin-inline-start: auto; }
+.icon-close { width: 44px; padding: 0; font: 500 23px/1 var(--display); }
+.settings-group { margin: 12px 0; padding: 12px; border-radius: 16px; background: var(--surface-2); }
+.setting-heading { display: flex; align-items: center; gap: 9px; margin: 0 0 10px; font-size: 15px; }
+.setting-heading svg { width: 19px; height: 19px; color: var(--accent-ink); }
+.settings-panel fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.settings-panel legend { font-size: 13px; color: var(--muted); margin-bottom: 5px; }
+.settings-swatches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
 .background-option {
-  display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer;
+  position: relative; display: flex; align-items: center; gap: 6px; min-height: 44px;
+  padding: 5px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 12px; cursor: pointer;
 }
-.background-option input { accent-color: var(--accent-ink); }
-.background-swatch { width: 28px; height: 22px; border-radius: 5px; border: 1px solid var(--line); }
-.motion-option { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; margin: 2px 0 14px; cursor: pointer; }
+.background-option:has(input:checked) { border-color: var(--ring); box-shadow: inset 0 0 0 1px var(--ring); }
+.background-option:has(input:focus-visible) { outline: 2px solid var(--ring); }
+.background-option input { margin: 0; accent-color: var(--accent-ink); }
+.background-swatch { flex: none; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--line); }
+.setting-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(126px, 1fr); align-items: center; gap: 8px; margin-top: 9px; font-size: 13px; }
+.setting-row select {
+  width: 100%; min-height: 42px; padding: 4px 22px 4px 8px; font-size: 14px;
+  background-color: var(--surface); background-position: right 6px center; border: 1px solid var(--line); border-radius: 10px;
+}
+.motion-option {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px;
+  cursor: pointer; font-size: 13px; user-select: none; -webkit-tap-highlight-color: transparent;
+}
 .motion-option input {
   appearance: none; width: 44px; height: 26px; margin: 0; border-radius: 999px; cursor: pointer;
   background: radial-gradient(circle at 12px center, #fff 0 8px, transparent 8.7px), var(--muted);
@@ -524,6 +562,9 @@ body[data-motion="off"] .access-emblem, body[data-motion="off"] .access-hero h1 
 body[data-motion="off"] button { transition: none; }
 body[data-motion="off"] button:not(:disabled):active { transform: none; }
 .settings-actions { display: grid; gap: 8px; }
+.settings-actions .btn { width: 100%; }
+.share-file { margin: 4px 0; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.share-hint { font-size: 13px; color: var(--muted); margin: 0; }
 .access-error, .settings-status { margin: 0; color: var(--danger); }
 .access-error:empty, .settings-status:empty { display: none; }
 @media (prefers-reduced-motion: reduce) {
@@ -542,6 +583,9 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     <rect x="6" y="22" width="12" height="12" fill="#1C1E20" opacity=".35"/>
     <rect x="24" y="22" width="8.5" height="8.5" fill="#1C1E20" transform="rotate(45 28.25 26.25)"/>
   </symbol>
+  <symbol id="icon-archive" viewBox="0 0 24 24"><path d="M3 4h18v5H3zM5 9v11h14V9m-9 4h4"/></symbol>
+  <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M9 3h6l6 6v6l-6 6H9l-6-6V9zM12 8.5l3 1.75v3.5L12 15.5l-3-1.75v-3.5z"/></symbol>
+  <symbol id="icon-document" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6m-6 4h6"/></symbol>
 </svg>
 
 <main class="access-panel" id="accessPanel" aria-labelledby="accessTitle">
@@ -588,12 +632,12 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     <button type="button" class="btn" id="btnHide">Скрыть</button>
   </div>
 
-  <section class="history" id="history" aria-label="История актов">
+  <section class="history" id="history" aria-label="Архив актов">
     <div class="h-head">
+      <span class="section-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-archive"/></svg></span>
+      <div><h2>Архив актов</h2><p class="hint" id="histCount"></p></div>
       <button type="button" class="btn" id="btnBack">← К акту</button>
-      <div><h2>История актов</h2><p class="hint" id="histCount"></p></div>
     </div>
-    <p class="hint">Акты сохраняются сами, пока вы их заполняете. Они хранятся в браузере на этом телефоне. Если очистить данные браузера, история пропадёт.</p>
     <div class="h-list" id="histList"></div>
   </section>
 
@@ -699,8 +743,8 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
         <p class="hint" id="samplePreview" hidden>Пример акта</p>
         <div class="tpl"><span class="lbl">Шаблон акта</span><div class="chips" id="tplChips" role="group" aria-label="Шаблон акта"></div></div>
         <div class="pv-btns">
-          <button type="button" class="btn primary" id="btnShare" hidden>Подготовить PDF</button>
-          <button type="button" class="btn primary" id="btnPdf">Скачать PDF</button>
+          <button type="button" class="btn primary" id="btnShare" aria-haspopup="dialog">Отправить PDF</button>
+          <button type="button" class="btn" id="btnPdf">Скачать PDF</button>
           <button type="button" class="btn" id="btnPng">Скачать картинку</button>
           <button type="button" class="btn" id="btnCopy">Копировать текст</button>
         </div>
@@ -720,31 +764,65 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v11h5v-6h4v6h5V9"/></svg>
     </button>
     <button class="nav-btn" type="button" id="btnView" data-nav="preview" aria-label="Показать акт" title="Акт">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6m-6 4h6"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-document"/></svg>
     </button>
     <button class="nav-btn" type="button" id="navArchive" data-nav="history" aria-label="Архив" title="Архив">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v5H3zM5 9v11h14V9m-9 4h4"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-archive"/></svg>
     </button>
     <button class="nav-btn" type="button" id="navSettings" aria-haspopup="dialog" aria-expanded="false" aria-label="Настройки" title="Настройки">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l6 6v6l-6 6H9l-6-6V9zM12 8.5l3 1.75v3.5L12 15.5l-3-1.75v-3.5z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-settings"/></svg>
     </button>
   </nav>
 </div>
 <div class="toast" id="toast" hidden></div>
 <dialog id="settingsPanel" class="settings-panel" aria-labelledby="settingsTitle">
-  <h2 id="settingsTitle">Настройки</h2>
-  <fieldset id="backgroundChoices">
-    <legend>Фон приложения</legend>
-    <label class="background-option"><input type="radio" name="background" value="standard" checked><span class="background-swatch" style="background:#F2F2F5"></span>Стандартный</label>
-    <label class="background-option"><input type="radio" name="background" value="sand"><span class="background-swatch" style="background:#F3E8D3"></span>Песочный</label>
-    <label class="background-option"><input type="radio" name="background" value="blue"><span class="background-swatch" style="background:#E1ECF8"></span>Голубой</label>
-  </fieldset>
-  <label class="motion-option">Анимации <input id="motionEnabled" type="checkbox" role="switch" checked></label>
+  <div class="settings-head">
+    <span class="section-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-settings"/></svg></span>
+    <h2 id="settingsTitle">Настройки</h2>
+    <form method="dialog"><button type="submit" class="btn icon-close" aria-label="Закрыть настройки">×</button></form>
+  </div>
+  <section class="settings-group" aria-labelledby="appearanceTitle">
+    <h3 class="setting-heading" id="appearanceTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M19 5l-1.5 1.5m-11 11L5 19"/></svg>Оформление</h3>
+    <fieldset id="backgroundChoices">
+      <legend>Фон приложения</legend>
+      <div class="settings-swatches">
+        <label class="background-option"><input type="radio" name="background" value="standard" checked><span class="background-swatch" style="background:#F2F2F5"></span>Системный</label>
+        <label class="background-option"><input type="radio" name="background" value="white"><span class="background-swatch" style="background:#FFF"></span>Белый</label>
+        <label class="background-option"><input type="radio" name="background" value="sand"><span class="background-swatch" style="background:#F3E8D3"></span>Песочный</label>
+        <label class="background-option"><input type="radio" name="background" value="blue"><span class="background-swatch" style="background:#E1ECF8"></span>Голубой</label>
+      </div>
+    </fieldset>
+    <label class="setting-row">Цвет кнопок
+      <select id="accentSetting"><option value="gold">Янтарный</option><option value="blue">Синий</option><option value="green">Зелёный</option></select>
+    </label>
+    <label class="setting-row">Шрифт приложения
+      <select id="fontSetting"><option value="system">Системный</option><option value="inter">Inter</option><option value="serif">С засечками</option></select>
+    </label>
+    <label class="motion-option">Анимации <input id="motionEnabled" type="checkbox" role="switch" checked></label>
+  </section>
+  <section class="settings-group" aria-labelledby="actSettingsTitle">
+    <h3 class="setting-heading" id="actSettingsTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-document"/></svg>Акт</h3>
+    <label class="setting-row">Шаблон акта
+      <select id="templateSetting"><option value="business">Деловой</option><option value="compact">Компактный</option></select>
+    </label>
+  </section>
   <div class="settings-actions">
     <button type="button" class="btn" id="btnUpdate">Обновить сайт</button>
     <div class="settings-status" id="updateStatus" role="status"></div>
-    <button type="button" class="btn" id="btnLock">Выйти и заблокировать</button>
-    <form method="dialog"><button type="submit" class="btn primary">Готово</button></form>
+  </div>
+</dialog>
+<dialog id="sharePanel" class="settings-panel" aria-labelledby="shareTitle">
+  <div class="settings-head">
+    <span class="section-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-document"/></svg></span>
+    <h2 id="shareTitle">Отправить PDF</h2>
+    <form method="dialog"><button type="submit" class="btn icon-close" aria-label="Закрыть отправку">×</button></form>
+  </div>
+  <div class="settings-actions">
+    <p class="share-file" id="shareName"></p>
+    <p class="share-hint">Выберите приложение и получателя. Для отправки в другом аккаунте Telegram скачайте PDF и прикрепите его в нужном чате.</p>
+    <button type="button" class="btn primary" id="btnSystemShare" hidden>Выбрать приложение и получателя</button>
+    <button type="button" class="btn" id="btnShareDownload">Скачать PDF</button>
+    <div class="settings-status" id="shareStatus" role="status"></div>
   </div>
 </dialog>
 
@@ -1288,7 +1366,6 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       signHtml(m) +
       '</div>';
     setPdfStatus('');
-    syncShareButton();
   }
 
   function actText() {
@@ -1334,6 +1411,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   function renderControls() {
     var m = state.meta;
     chipRow($('tplChips'), TPL, m.template === 'compact' ? 'compact' : 'business', function (v) { state.meta.template = v; refresh(); });
+    $('templateSetting').value = m.template === 'compact' ? 'compact' : 'business';
     chipRow($('signChips'), SIGNS, m.signMode || 'line', function (v) { state.meta.signMode = v; edit(); });
     chipRow($('warrChips'), WARR, String(m.warranty || ''), function (v) { state.meta.warranty = v; $('f-warranty').value = v; edit(); });
     $('okOpts').hidden = m.signMode !== 'check';
@@ -1343,6 +1421,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   function bindControls() {
     $('f-workerOk').addEventListener('change', function () { state.meta.workerOk = this.checked; edit(); });
     $('f-clientOk').addEventListener('change', function () { state.meta.clientOk = this.checked; edit(); });
+    $('templateSetting').addEventListener('change', function () { state.meta.template = this.value; refresh(); });
   }
 
   function renderSummaries() {
@@ -1381,7 +1460,39 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
 
   /* Экраны */
   var lastView = 'form';
-  function setView(v) {
+  var viewKey = 'akt-master-location-v1';
+  var previewPane = document.querySelector('.pane-preview');
+  var scrollTimer = null;
+
+  function rememberLocation() {
+    clearTimeout(scrollTimer);
+    if ($('actApp').hidden) return;
+    try {
+      localStorage.setItem(viewKey, JSON.stringify({
+        act: state.id, view: document.body.dataset.view, lastView: lastView,
+        y: window.scrollY, previewY: previewPane.scrollTop
+      }));
+    } catch (error) {}
+  }
+
+  function rememberAfterScroll() {
+    if ($('actApp').hidden) return;
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(rememberLocation, 150);
+  }
+
+  function restoreLocation() {
+    var position;
+    try { position = JSON.parse(localStorage.getItem(viewKey)); } catch (error) {}
+    if (position && position.act === state.id && ['form', 'preview', 'history'].indexOf(position.view) !== -1) {
+      lastView = position.lastView === 'preview' ? 'preview' : 'form';
+      setView(position.view, position);
+    } else {
+      setView('form');
+    }
+  }
+
+  function setView(v, position) {
     if (v !== 'history') lastView = v;
     document.body.dataset.view = v;
     $('bar').querySelectorAll('[data-nav]').forEach(function (button) {
@@ -1389,8 +1500,13 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       else button.removeAttribute('aria-current');
     });
     if (v === 'history') { flush(); renderHistory(); }
-    window.scrollTo(0, 0);
+    window.scrollTo(0, position ? position.y : 0);
+    previewPane.scrollTop = position ? position.previewY : 0;
+    if (!position) rememberLocation();
   }
+
+  window.addEventListener('scroll', rememberAfterScroll, { passive: true });
+  previewPane.addEventListener('scroll', rememberAfterScroll, { passive: true });
 
   function loadAct(a, view) {
     flush();
@@ -1439,7 +1555,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
 
   function renderHistory() {
     var list = loadHist(), box = $('histList'); box.textContent = '';
-    $('histCount').textContent = list.length ? 'Сохранено актов: ' + list.length : '';
+    $('histCount').textContent = list.length ? 'Сохранено: ' + list.length : 'Пока пусто';
     if (!list.length) {
       var e = document.createElement('div'); e.className = 'empty';
       e.innerHTML = '<p style="margin:0 0 12px">Пока здесь пусто. Заполните первый акт, и он появится здесь сам.</p><button type="button" class="btn" id="btnSampleH">Показать пример акта</button>';
@@ -1450,11 +1566,12 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     list.forEach(function (a) {
       var c = calc(a), card = document.createElement('article'); card.className = 'hcard';
       var where = [a.meta.city, a.meta.address].filter(Boolean).join(', ');
-      var sub = [a.meta.title, fmtDate(a.meta.date)].filter(Boolean).join(' · ');
+      var sub = ['№ ' + (a.meta.number || '—'), fmtDate(a.meta.date)].filter(Boolean).join(' · ');
       card.innerHTML =
-        '<div class="h-main"><div class="h-no"><small>Акт</small>№ ' + esc(a.meta.number || '—') + '</div>' +
-        '<div class="h-info"><strong>' + esc(a.meta.client || 'Заказчик не указан') + '</strong><span>' + esc(where || 'Адрес не указан') + '</span><span>' + esc(sub) + '</span></div>' +
-        '<div class="h-sum">' + money(c.pay) + ' ' + cur().label + '</div></div>' +
+        '<div class="h-main"><span class="section-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-document"/></svg></span>' +
+        '<div class="h-info"><span>' + esc(sub) + '</span><strong>' + esc(a.meta.title || a.meta.docTitle || DEF.title) + '</strong>' +
+        (a.meta.client ? '<span>' + esc(a.meta.client) + '</span>' : '') + (where ? '<span>' + esc(where) + '</span>' : '') + '</div>' +
+        '<div class="h-sum"><span>К оплате</span><strong>' + money(c.pay) + ' ' + cur().label + '</strong></div></div>' +
         '<div class="h-act"><button type="button" class="btn primary h-open">Открыть</button><button type="button" class="btn h-dup">Сделать копию</button><button type="button" class="btn h-del">Удалить</button></div>';
       card.querySelector('.h-open').addEventListener('click', function () { loadAct(a, 'preview'); });
       card.querySelector('.h-dup').addEventListener('click', function () { dupAct(a); });
@@ -1593,9 +1710,6 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   function readyPdf() {
     return files.pdf && files.pdf.key === exportKey('pdf') ? files.pdf.file : null;
   }
-  function syncShareButton() {
-    if (!busy) $('btnShare').textContent = readyPdf() ? 'Отправить PDF' : 'Подготовить PDF';
-  }
   function setPdfStatus(message) {
     var status = $('pdfStatus');
     status.textContent = message;
@@ -1606,7 +1720,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     busy = true;
     var label = btn.textContent; btn.disabled = true; btn.textContent = 'Готовлю файл…';
     fn().then(null, function () {}).then(function () {
-      busy = false; btn.disabled = false; btn.textContent = label; syncShareButton();
+      busy = false; btn.disabled = false; btn.textContent = label;
     });
   }
   function exportAs(kind) {
@@ -1622,44 +1736,57 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
         });
     });
   }
-  async function shareAct() {
-    var button = $('btnShare');
-    if (busy || button.disabled) return;
-    var file = readyPdf();
-    if (!file) {
-      withBusy(button, function () {
-        return getFile('pdf').then(function () {
-          if (readyPdf()) setPdfStatus('PDF готов. Нажмите «Отправить PDF».');
-        }).catch(function () {
-          setPdfStatus('Не удалось подготовить PDF. Проверьте подключение и попробуйте снова.');
-        });
-      });
-      return;
-    }
-    button.disabled = true;
+  var inClaude = !!(window.claude && window.claude.use);
+  var sharePanel = $('sharePanel');
+  var systemShare = $('btnSystemShare');
+  var shareFile = null;
+
+  function canShareFile(file) {
     try {
-      var payload = { files: [file] };
-      if (!navigator.canShare(payload)) throw new Error('sharing unavailable');
-      await navigator.share(payload);
-      setPdfStatus('');
-    } catch (error) {
-      if (error.name !== 'AbortError') {
-        setPdfStatus('Нажмите «Скачать PDF» и прикрепите файл в мессенджере как документ.');
-      }
-    } finally {
-      button.disabled = false;
-    }
+      return !inClaude && !!navigator.share && !!navigator.canShare && navigator.canShare({ files: [file] });
+    } catch (error) { return false; }
   }
+
+  $('btnShare').addEventListener('click', function () {
+    withBusy(this, async function () {
+      try {
+        var file = await getFile('pdf');
+        if (file !== readyPdf()) return;
+        shareFile = file;
+        $('shareName').textContent = file.name;
+        $('shareStatus').textContent = '';
+        systemShare.hidden = !canShareFile(file);
+        sharePanel.showModal();
+      } catch (error) {
+        setPdfStatus('Не удалось подготовить PDF. Проверьте подключение и попробуйте снова.');
+      }
+    });
+  });
+  systemShare.addEventListener('click', async function () {
+    if (!shareFile || systemShare.disabled) return;
+    systemShare.disabled = true;
+    try {
+      await navigator.share({ files: [shareFile] });
+      sharePanel.close();
+    } catch (error) {
+      if (error.name !== 'AbortError') $('shareStatus').textContent = 'Скачайте PDF и прикрепите его в нужном чате.';
+    } finally {
+      systemShare.disabled = false;
+    }
+  });
+  $('btnShareDownload').addEventListener('click', async function () {
+    if (!shareFile) return;
+    try {
+      await saveFile(shareFile.name, shareFile);
+      $('shareStatus').textContent = 'Прикрепите PDF как документ в выбранном чате.';
+    } catch (error) {
+      $('shareStatus').textContent = 'Не удалось скачать PDF. Попробуйте ещё раз.';
+    }
+  });
+  sharePanel.addEventListener('close', function () { shareFile = null; });
   $('btnPdf').addEventListener('click', function () { exportAs('pdf'); });
   $('btnPng').addEventListener('click', function () { exportAs('png'); });
 
-  /* Телефон: кнопка «Отправить» через меню телефона (только вне Claude) */
-  var inClaude = !!(window.claude && window.claude.use), canShare = false;
-  try { canShare = !inClaude && !!navigator.share && !!navigator.canShare && navigator.canShare({ files: [new File(['x'], 'a.pdf', { type: 'application/pdf' })] }); } catch (e) {}
-  if (canShare) {
-    $('btnShare').hidden = false; $('btnPdf').classList.remove('primary');
-    $('btnShare').addEventListener('click', shareAct);
-  }
   if (!inClaude) setTimeout(function () { Promise.all([loadScript(H2C), loadScript(JSPDF)]).catch(function () {}); }, 4000);
   /* Клавиатура: прячем нижнюю панель, пока вводите текст */
   document.addEventListener('focusin', function (e) {
@@ -1669,7 +1796,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
 
   /* Код и оформление хранятся в этом браузере. */
   var accessKey = 'akt-master-access-v1';
-  var lockKey = 'akt-master-lock';
+  var sessionKey = 'akt-master-unlocked';
   var backgroundKey = 'akt-master-background';
   var motionKey = 'akt-master-motion';
   var accessForm = $('accessForm');
@@ -1683,6 +1810,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   function showAccess(focus) {
     accessAttempt++;
     if (settings.open) settings.close();
+    if (sharePanel.open) sharePanel.close();
     $('actApp').hidden = true;
     $('bar').hidden = true;
     $('toast').hidden = true;
@@ -1703,6 +1831,14 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     } catch (error) {
       accessError.textContent = 'Разрешите браузеру сохранять данные этого сайта и обновите страницу.';
     }
+  }
+
+  function showApp() {
+    $('accessPanel').hidden = true;
+    document.body.classList.remove('access-locked');
+    $('actApp').hidden = false;
+    $('bar').hidden = false;
+    restoreLocation();
   }
 
   async function hashCode(code, salt) {
@@ -1757,11 +1893,8 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       }
       document.activeElement.blur();
       accessForm.reset();
-      $('accessPanel').hidden = true;
-      document.body.classList.remove('access-locked');
-      $('actApp').hidden = false;
-      $('bar').hidden = false;
-      window.scrollTo(0, 0);
+      try { sessionStorage.setItem(sessionKey, '1'); } catch (error) {}
+      showApp();
     } catch (error) {
       accessError.textContent = 'Не удалось проверить код. Откройте сайт по HTTPS и разрешите браузеру сохранять данные.';
     } finally {
@@ -1770,8 +1903,10 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   });
 
   function setBackground(value) {
-    var background = value === 'sand' || value === 'blue' ? value : 'standard';
+    var background = ['white', 'sand', 'blue'].indexOf(value) !== -1 ? value : 'standard';
     document.body.dataset.background = background;
+    if (background === 'white') document.documentElement.dataset.theme = 'light';
+    else delete document.documentElement.dataset.theme;
     $('backgroundChoices').querySelector('[value="' + background + '"]').checked = true;
   }
 
@@ -1792,6 +1927,24 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   });
   try { setMotion(localStorage.getItem(motionKey)); } catch (error) { setMotion('on'); }
 
+  function bindAppearanceSelect(id, name, defaultValue) {
+    var select = $(id);
+    var key = 'akt-master-' + name;
+    function apply(value) {
+      select.value = value || defaultValue;
+      if (select.selectedIndex < 0) select.value = defaultValue;
+      document.body.dataset[name] = select.value;
+    }
+    try { apply(localStorage.getItem(key)); } catch (error) { apply(defaultValue); }
+    select.addEventListener('change', function () {
+      apply(select.value);
+      try { localStorage.setItem(key, select.value); } catch (error) {}
+    });
+    window.addEventListener('storage', function (event) { if (event.key === key) apply(event.newValue); });
+  }
+  bindAppearanceSelect('accentSetting', 'accent', 'gold');
+  bindAppearanceSelect('fontSetting', 'font', 'system');
+
   function openSettings() {
     settings.showModal();
     $('navSettings').setAttribute('aria-expanded', 'true');
@@ -1799,19 +1952,15 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   $('btnSettings').addEventListener('click', openSettings);
   $('navSettings').addEventListener('click', openSettings);
   settings.addEventListener('close', function () { $('navSettings').setAttribute('aria-expanded', 'false'); });
-  $('btnLock').addEventListener('click', function () {
-    flush();
-    showAccess(false);
-    window.scrollTo(0, 0);
-    try { localStorage.setItem(lockKey, String(Date.now())); } catch (error) {}
-  });
   window.addEventListener('storage', function (event) {
-    if (event.key === lockKey) showAccess(false);
     if (event.key === backgroundKey) setBackground(event.newValue);
     if (event.key === motionKey) setMotion(event.newValue);
-    if (event.key === accessKey && !$('accessPanel').hidden && !accessSubmit.disabled) showAccess(false);
+    if (event.key === accessKey || event.key === null) {
+      rememberLocation();
+      try { sessionStorage.removeItem(sessionKey); } catch (error) {}
+      showAccess(false);
+    }
   });
-  window.addEventListener('pageshow', function (event) { if (event.persisted) showAccess(false); });
   $('btnUpdate').addEventListener('click', async function () {
     var button = $('btnUpdate');
     var status = $('updateStatus');
@@ -1819,6 +1968,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     status.textContent = '';
     try {
       if (!navigator.onLine) throw new Error('offline');
+      rememberLocation();
       flush();
       var registration = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
       if (registration) await registration.update();
@@ -1828,16 +1978,24 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       button.disabled = false;
     }
   });
-  showAccess(false);
 
-  window.addEventListener('pagehide', flush);
-  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
+  function saveProgress() {
+    if ($('actApp').hidden) return;
+    rememberLocation();
+    flush();
+  }
+  window.addEventListener('pagehide', saveProgress);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') saveProgress(); });
 
   /* Старт */
   bindMeta(); bindControls(); initFold(); renderCats(); renderWorks(); renderItems();
   $('banner').hidden = !state.sample;
   setView('form');
   refresh(); updateHistBtn();
+  var unlocked = false;
+  try { unlocked = sessionStorage.getItem(sessionKey) === '1' && localStorage.getItem(accessKey) !== null; } catch (error) {}
+  if (unlocked) showApp();
+  else showAccess(false);
 })();
 </script>
 
