@@ -112,6 +112,7 @@ button:not(:disabled):active { transform: scale(.96); }
   min-height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line);
   background: var(--surface); cursor: pointer; font-weight: 500; font-size: 14px; white-space: nowrap;
 }
+a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .btn:hover { border-color: var(--muted); }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
 .btn.warn { border-color: var(--danger); color: var(--danger); }
@@ -563,8 +564,9 @@ body[data-motion="off"] button { transition: none; }
 body[data-motion="off"] button:not(:disabled):active { transform: none; }
 .settings-actions { display: grid; gap: 8px; }
 .settings-actions .btn { width: 100%; }
-.share-file { margin: 4px 0; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
-.share-hint { font-size: 13px; color: var(--muted); margin: 0; }
+.download-name { margin: 4px 0; color: var(--fg); font-size: 14px; overflow-wrap: anywhere; }
+.download-hint { font-size: 13px; color: var(--muted); margin: 0; }
+.download-panel .btn { min-height: 44px; }
 .access-error, .settings-status { margin: 0; color: var(--danger); }
 .access-error:empty, .settings-status:empty { display: none; }
 @media (prefers-reduced-motion: reduce) {
@@ -743,13 +745,12 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
         <p class="hint" id="samplePreview" hidden>Пример акта</p>
         <div class="tpl"><span class="lbl">Шаблон акта</span><div class="chips" id="tplChips" role="group" aria-label="Шаблон акта"></div></div>
         <div class="pv-btns">
-          <button type="button" class="btn primary" id="btnShare" aria-haspopup="dialog">Отправить PDF</button>
-          <button type="button" class="btn" id="btnPdf">Скачать PDF</button>
+          <button type="button" class="btn primary" id="btnPdf" aria-haspopup="dialog">Скачать PDF</button>
           <button type="button" class="btn" id="btnPng">Скачать картинку</button>
           <button type="button" class="btn" id="btnCopy">Копировать текст</button>
         </div>
         <p class="hint" id="pdfStatus" role="status" hidden></p>
-        <p class="hint">Для отправки из мессенджера прикрепите скачанный PDF как документ.</p>
+        <p class="hint">В Telegram откройте нужный чат и прикрепите скачанный PDF через «Файл».</p>
       </div>
       <textarea class="copy-fallback" id="copyFallback" readonly hidden aria-label="Текст акта для копирования"></textarea>
       <article class="paper" id="paper"></article>
@@ -811,18 +812,17 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     <div class="settings-status" id="updateStatus" role="status"></div>
   </div>
 </dialog>
-<dialog id="sharePanel" class="settings-panel" aria-labelledby="shareTitle">
+<dialog id="downloadPanel" class="settings-panel download-panel" aria-labelledby="downloadTitle">
   <div class="settings-head">
     <span class="section-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-document"/></svg></span>
-    <h2 id="shareTitle">Отправить PDF</h2>
-    <form method="dialog"><button type="submit" class="btn icon-close" aria-label="Закрыть отправку">×</button></form>
+    <h2 id="downloadTitle">PDF готов</h2>
+    <form method="dialog"><button type="submit" class="btn icon-close" aria-label="Закрыть скачивание">×</button></form>
   </div>
   <div class="settings-actions">
-    <p class="share-file" id="shareName"></p>
-    <p class="share-hint">Выберите приложение и получателя. Для отправки в другом аккаунте Telegram скачайте PDF и прикрепите его в нужном чате.</p>
-    <button type="button" class="btn primary" id="btnSystemShare" hidden>Выбрать приложение и получателя</button>
-    <button type="button" class="btn" id="btnShareDownload">Скачать PDF</button>
-    <div class="settings-status" id="shareStatus" role="status"></div>
+    <p class="download-name" id="downloadName"></p>
+    <a class="btn primary" id="downloadPdf" download>Сохранить файл PDF</a>
+    <p class="download-hint">После скачивания откройте нужный чат Telegram и выберите «Скрепка» → «Файл» → «Загрузки».</p>
+    <div class="settings-status" id="downloadStatus" role="status"></div>
   </div>
 </dialog>
 
@@ -1723,9 +1723,9 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
       busy = false; btn.disabled = false; btn.textContent = label;
     });
   }
-  function exportAs(kind) {
-    withBusy(kind === 'pdf' ? $('btnPdf') : $('btnPng'), function () {
-      return getFile(kind)
+  function downloadPng() {
+    withBusy($('btnPng'), function () {
+      return getFile('png')
         .then(function (file) { return saveFile(file.name, file); })
         .then(function () { toast('Файл подготовлен. Прикрепите его в мессенджере или на почте.'); })
         .catch(function (e) {
@@ -1737,55 +1737,45 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
     });
   }
   var inClaude = !!(window.claude && window.claude.use);
-  var sharePanel = $('sharePanel');
-  var systemShare = $('btnSystemShare');
-  var shareFile = null;
+  var downloadPanel = $('downloadPanel');
+  var downloadLink = $('downloadPdf');
+  var downloadFile = null;
+  var downloadUrl = null;
 
-  function canShareFile(file) {
-    try {
-      return !inClaude && !!navigator.share && !!navigator.canShare && navigator.canShare({ files: [file] });
-    } catch (error) { return false; }
-  }
-
-  $('btnShare').addEventListener('click', function () {
+  $('btnPdf').addEventListener('click', function () {
     withBusy(this, async function () {
       try {
         var file = await getFile('pdf');
         if (file !== readyPdf()) return;
-        shareFile = file;
-        $('shareName').textContent = file.name;
-        $('shareStatus').textContent = '';
-        systemShare.hidden = !canShareFile(file);
-        sharePanel.showModal();
+        downloadFile = file;
+        downloadUrl = URL.createObjectURL(file);
+        downloadLink.href = downloadUrl;
+        downloadLink.download = file.name;
+        $('downloadName').textContent = file.name;
+        $('downloadStatus').textContent = '';
+        downloadPanel.showModal();
       } catch (error) {
         setPdfStatus('Не удалось подготовить PDF. Проверьте подключение и попробуйте снова.');
       }
     });
   });
-  systemShare.addEventListener('click', async function () {
-    if (!shareFile || systemShare.disabled) return;
-    systemShare.disabled = true;
+  downloadLink.addEventListener('click', async function (event) {
+    if (!inClaude || !downloadFile) return;
+    event.preventDefault();
     try {
-      await navigator.share({ files: [shareFile] });
-      sharePanel.close();
+      await saveFile(downloadFile.name, downloadFile);
     } catch (error) {
-      if (error.name !== 'AbortError') $('shareStatus').textContent = 'Скачайте PDF и прикрепите его в нужном чате.';
-    } finally {
-      systemShare.disabled = false;
+      $('downloadStatus').textContent = 'Не удалось скачать PDF. Попробуйте открыть сайт в Chrome.';
     }
   });
-  $('btnShareDownload').addEventListener('click', async function () {
-    if (!shareFile) return;
-    try {
-      await saveFile(shareFile.name, shareFile);
-      $('shareStatus').textContent = 'Прикрепите PDF как документ в выбранном чате.';
-    } catch (error) {
-      $('shareStatus').textContent = 'Не удалось скачать PDF. Попробуйте ещё раз.';
-    }
+  downloadPanel.addEventListener('close', function () {
+    var oldUrl = downloadUrl;
+    downloadFile = null;
+    downloadUrl = null;
+    downloadLink.removeAttribute('href');
+    if (oldUrl) setTimeout(function () { URL.revokeObjectURL(oldUrl); }, 60000);
   });
-  sharePanel.addEventListener('close', function () { shareFile = null; });
-  $('btnPdf').addEventListener('click', function () { exportAs('pdf'); });
-  $('btnPng').addEventListener('click', function () { exportAs('png'); });
+  $('btnPng').addEventListener('click', downloadPng);
 
   if (!inClaude) setTimeout(function () { Promise.all([loadScript(H2C), loadScript(JSPDF)]).catch(function () {}); }, 4000);
   /* Клавиатура: прячем нижнюю панель, пока вводите текст */
@@ -1810,7 +1800,7 @@ body[data-motion="off"] button:not(:disabled):active { transform: none; }
   function showAccess(focus) {
     accessAttempt++;
     if (settings.open) settings.close();
-    if (sharePanel.open) sharePanel.close();
+    if (downloadPanel.open) downloadPanel.close();
     $('actApp').hidden = true;
     $('bar').hidden = true;
     $('toast').hidden = true;
